@@ -1,0 +1,40 @@
+{
+	"name": "brand-hub",
+	"private": true,
+	"version": "1.0.0",
+	"type": "module",
+	"description": "Internal design tool for the company",
+	"scripts": {
+		"dev": "pnpm --filter client dev --filter server dev",
+		"dev:client": "pnpm --filter client dev",
+		"dev:server": "pnpm --filter server dev",
+		"build": "pnpm --filter client build",
+		"preview": "pnpm --filter client preview",
+		"format": "prettier --write .",
+		"lint": "eslint .",
+		"lint:fix": "eslint . --fix",
+		"check": "pnpm lint && pnpm format",
+		"prepare": "husky"
+	},
+	"keywords": [],
+	"author": "Sudorgin Daniil (https://github.com/Zilusion)",
+	"license": "ISC",
+	"packageManager": "pnpm@10.12.2",
+	"devDependencies": {
+		"@commitlint/cli": "^19.8.1",
+		"@commitlint/config-conventional": "^19.8.1",
+		"@eslint/js": "^9.29.0",
+		"eslint": "^9.29.0",
+		"eslint-config-prettier": "^10.1.5",
+		"eslint-plugin-svelte": "^3.9.3",
+		"globals": "^16.2.0",
+		"husky": "^9.1.7",
+		"lint-staged": "^16.1.2",
+		"prettier": "^3.6.1",
+		"prettier-plugin-svelte": "^3.4.0"
+	},
+	"lint-staged": {
+		"**/*.{js,svelte,json,md}": "prettier --write",
+		"**/*.{js,svelte}": "eslint --fix"
+	}
+}
