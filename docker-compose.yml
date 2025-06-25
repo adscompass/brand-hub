@@ -1,0 +1,33 @@
+services:
+  client-production:
+    build:
+      context: .
+      dockerfile: client/Dockerfile
+    container_name: client-production
+    ports:
+      - '80:80'
+    profiles:
+      - production
+  client-develop:
+    build:
+      context: .
+      dockerfile: client/Dockerfile.dev
+    container_name: client-development
+    ports:
+      - '5173:5173'
+    profiles:
+      - develop
+    develop:
+      watch:
+        - action: sync
+          path: ./client
+          target: /app/client
+          ignore:
+            - node_modules
+            - dist
+        - action: rebuild
+          path: ./package.json
+        - action: rebuild
+          path: ./pnpm-lock.yaml
+        - action: rebuild
+          path: ./client/package.json        
