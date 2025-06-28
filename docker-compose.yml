@@ -30,4 +30,4 @@ services:
         - action: rebuild
           path: ./pnpm-lock.yaml
         - action: rebuild
-          path: ./client/package.json        
+          path: ./client/package.json
