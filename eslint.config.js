@@ -5,35 +5,35 @@ import globals from 'globals';
 import { defineConfig } from 'eslint/config';
 
 export default defineConfig([
-	{
-		ignores: ['dist/', 'build/', '.vercel/', '.netlify/', 'pnpm-lock.yaml'],
-	},
+  {
+    ignores: ['dist/', 'build/', '.vercel/', '.netlify/', 'pnpm-lock.yaml'],
+  },
 
-	js.configs.recommended,
-	...sveltePlugin.configs['flat/recommended'],
+  js.configs.recommended,
+  ...sveltePlugin.configs['flat/recommended'],
 
-	{
-		files: ['**/*.svelte'],
-		languageOptions: {
-			globals: {
-				...globals.browser,
-			},
-		},
-		rules: {},
-	},
+  {
+    files: ['**/*.svelte'],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+      },
+    },
+    rules: {},
+  },
 
-	{
-		files: ['**/*.{js,mjs,cjs}'],
-		languageOptions: {
-			globals: {
-				...globals.browser,
-				...globals.node,
-			},
-		},
-		rules: {
-			'no-unused-vars': 'warn',
-		},
-	},
+  {
+    files: ['**/*.{js,mjs,cjs}'],
+    languageOptions: {
+      globals: {
+        ...globals.browser,
+        ...globals.node,
+      },
+    },
+    rules: {
+      'no-unused-vars': 'warn',
+    },
+  },
 
-	prettierConfig,
+  prettierConfig,
 ]);
