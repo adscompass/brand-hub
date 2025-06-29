@@ -5,3 +5,7 @@
   padding-inline: 1rem;
   max-width: 1200px;
 }
+
+.modal-open {
+  overflow: hidden;
+}
