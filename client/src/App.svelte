@@ -3,7 +3,7 @@
     logos: [
       {
         id: 'adscompass-logo-light',
-        name: 'Light Logo',
+        name: 'Adscompass светлый логотип',
         url: '/logos/adscompass-logo-light.svg',
         background: '#5e6ad2',
         color: '#ffffff',
@@ -11,7 +11,7 @@
       },
       {
         id: 'adscompass-logo-dark',
-        name: 'Dark Logo',
+        name: 'Adscompass тёмный логотип',
         url: '/logos/adscompass-logo-dark.svg',
         background: '#f4f2f4',
         color: '#000000',
@@ -19,7 +19,7 @@
       },
       {
         id: 'goldlead-logo-light',
-        name: 'Dark Logo',
+        name: 'Goldlead светлый логотип',
         url: '/logos/goldlead-logo-light.svg',
         background: '#5e6ad2',
         color: '#ffffff',
@@ -27,7 +27,7 @@
       },
       {
         id: 'goldlead-logo-dark',
-        name: 'Dark Logo',
+        name: 'Goldlead тёмный логотип',
         url: '/logos/goldlead-logo-dark.svg',
         background: '#f4f2f4',
         color: '#000000',
@@ -54,18 +54,28 @@
       ...customAsset,
       id: `custom-${Date.now()}`,
     };
-    customAssets.push(newAsset);
-    selectedAssets.push(newAsset.id);
+    customAssets = [...customAssets, newAsset];
+    selectedAssets = [...selectedAssets, newAsset.id];
   }
 
   async function download() {
     const zip = new JSZip();
     const logosFolder = zip.folder('logos');
 
-    if (selectedAssets.length === 0) return;
+    let assetsToDownload;
+
+    if (selectedAssets.length > 0) {
+      assetsToDownload = selectedAssets;
+    } else {
+      const allOriginalIds = assets.logos.map((logo) => logo.id);
+      const allCustomIds = customAssets.map((logo) => logo.id);
+      assetsToDownload = [...allOriginalIds, ...allCustomIds];
+    }
+
+    if (assetsToDownload.length === 0) return;
 
     await Promise.all(
-      selectedAssets.map(async (assetId) => {
+      assetsToDownload.map(async (assetId) => {
         try {
           const originalLogo = assets.logos.find((l) => l.id === assetId);
           if (originalLogo) {
@@ -233,7 +243,7 @@
         </ul>
 
         {#if customAssets.length > 0}
-          <h3 class="text-xl font-semibold mt-8">Ваши вариации</h3>
+          <h3 class="text-2xl font-semibold mt-8">Ваши вариации</h3>
           <ul class="grid grid-cols-[repeat(auto-fit,minmax(288px,1fr))] gap-4">
             {#each customAssets as logo (logo.id)}
               {@const baseLogo = assets.logos.find(

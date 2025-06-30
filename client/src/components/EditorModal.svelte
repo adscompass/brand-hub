@@ -156,12 +156,8 @@
       <aside class="flex flex-col gap-5 text-sm">
         <h4 class="font-bold">Холст</h4>
         <div>
-          <label class="block mb-1"
-            >Ширина: {Math.round(editor.canvasWidth)}px</label
-          >
-          <label class="block mb-1"
-            >Высота: {Math.round(editor.canvasHeight)}px</label
-          >
+          <p class="block mb-1">Ширина: {Math.round(editor.canvasWidth)}px</p>
+          <p class="block mb-1">Высота: {Math.round(editor.canvasHeight)}px</p>
         </div>
         <hr class="border-white/10" />
         <h4 class="font-bold">Логотип</h4>
@@ -180,8 +176,8 @@
           />
         </div>
         <div>
-          <label class="block mb-1">X: {Math.round(editor.logoX)}</label>
-          <label class="block mb-1">Y: {Math.round(editor.logoY)}</label>
+          <p class="block mb-1">X: {Math.round(editor.logoX)}</p>
+          <p class="block mb-1">Y: {Math.round(editor.logoY)}</p>
         </div>
         <button
           onclick={() => {
