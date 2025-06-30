@@ -42,6 +42,7 @@
     class="cursor-pointer w-full h-full flex items-center justify-center p-4"
   >
     <figure
+      class="object-contain"
       class:w-full={type === 'original'}
       class:h-full={type === 'original'}
       class:grid={type === 'original'}
@@ -59,7 +60,7 @@
         <img
           src={asset.url}
           alt={asset.name}
-          class="pointer-events-none select-none max-w-[60%]"
+          class="pointer-events-none select-none"
         />
         <figcaption
           class="absolute top-4 left-4 font-semibold opacity-0 pointer-coarse:opacity-100 text-shadow-lg group-hover:opacity-100 transition-opacity duration-300"

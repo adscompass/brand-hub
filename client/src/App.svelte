@@ -18,6 +18,14 @@
         extension: 'svg',
       },
       // {
+      //   id: 'random-test',
+      //   name: 'Тестовый логотип',
+      //   url: '/logos/random-test.jpg',
+      //   background: '#5e6ad2',
+      //   color: '#ffffff',
+      //   extension: 'png',
+      // }
+      // {
       //   id: 'goldlead-logo-light',
       //   name: 'Goldlead светлый логотип',
       //   url: '/logos/goldlead-logo-light.svg',
@@ -203,7 +211,9 @@
     <section class="mb-10">
       <div class="container flex flex-col gap-3">
         <h2 class="text-2xl font-semibold">Логотипы</h2>
-        <ul class="grid grid-cols-[repeat(auto-fit,minmax(288px,1fr))] gap-4">
+        <ul
+          class="grid grid-cols-[repeat(auto-fill,minmax(288px,1fr))] gap-4 mb-10"
+        >
           {#each assets.logos as logo (logo.id)}
             <AssetCard
               asset={logo}
@@ -218,7 +228,9 @@
 
         {#if customAssets.length > 0}
           <h3 class="text-2xl font-semibold mt-8">Ваши вариации</h3>
-          <ul class="grid grid-cols-[repeat(auto-fit,minmax(288px,1fr))] gap-4">
+          <ul
+            class="grid grid-cols-[repeat(auto-fill,minmax(288px,1fr))] gap-4"
+          >
             {#each customAssets as logo (logo.id)}
               {@const baseLogo = assets.logos.find(
                 (l) => l.id === logo.originalId,
@@ -232,6 +244,15 @@
               />
             {/each}
           </ul>
+        {:else}
+          <div
+            class="text-center py-10 px-4 border border-dashed border-white/20 rounded-lg"
+          >
+            <p class="text-white/60">Вы еще не создали ни одной вариации.</p>
+            <p class="text-white/40 text-sm mt-1">
+              Нажмите на иконку кисти на любом логотипе, чтобы начать.
+            </p>
+          </div>
         {/if}
       </div>
     </section>

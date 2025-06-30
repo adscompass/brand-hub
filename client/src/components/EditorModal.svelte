@@ -2,7 +2,7 @@
   import { gestures } from '../lib/actions/gestures';
   let { logo, onSave, onClose } = $props();
 
-  const PAN_SENSITIVITY = 2.5;
+  const PAN_SENSITIVITY = 1.0;
   const ZOOM_SENSITIVITY = 0.001;
 
   let dialogElement;
