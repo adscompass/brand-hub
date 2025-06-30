@@ -17,21 +17,38 @@
         color: '#000000',
         extension: 'svg',
       },
+      // {
+      //   id: 'goldlead-logo-light',
+      //   name: 'Goldlead светлый логотип',
+      //   url: '/logos/goldlead-logo-light.svg',
+      //   background: '#5e6ad2',
+      //   color: '#ffffff',
+      //   extension: 'svg',
+      // },
+      // {
+      //   id: 'goldlead-logo-dark',
+      //   name: 'Goldlead тёмный логотип',
+      //   url: '/logos/goldlead-logo-dark.svg',
+      //   background: '#f4f2f4',
+      //   color: '#000000',
+      //   extension: 'svg',
+      // },
+    ],
+    colors: [
       {
-        id: 'goldlead-logo-light',
-        name: 'Goldlead светлый логотип',
-        url: '/logos/goldlead-logo-light.svg',
-        background: '#5e6ad2',
-        color: '#ffffff',
-        extension: 'svg',
+        groupName: 'Основные',
+        items: [
+          { name: '', hex: '#FF1847' },
+          { name: '', hex: '#FFF8F9' },
+          { name: '', hex: '#190000' },
+        ],
       },
       {
-        id: 'goldlead-logo-dark',
-        name: 'Goldlead тёмный логотип',
-        url: '/logos/goldlead-logo-dark.svg',
-        background: '#f4f2f4',
-        color: '#000000',
-        extension: 'svg',
+        groupName: 'Вспомогательные',
+        items: [
+          { name: '', hex: '#F13194' },
+          { name: '', hex: '#F6598D' },
+        ],
       },
     ],
   };
@@ -43,6 +60,7 @@
   import JSZip from 'jszip';
   import EditorModal from './components/EditorModal.svelte';
   import AssetCard from './components/AssetCard.svelte';
+  import ColorCard from './components/ColorCard.svelte';
 
   function extractInnerSvg(svgText) {
     const svgTagRegex = /<svg[^>]*>([\s\S]*)<\/svg>/;
@@ -156,7 +174,7 @@
       <span class="text-center">AdsCompass</span>
       <span class="text-center">Руководство по стилю</span>
     </h1>
-    <p class="bg-white/10 px-6 py-1 rounded-2xl">Упрощённая версия</p>
+    <p class="bg-white/10 px-6 py-1 rounded-2xl">Базовая версия</p>
     <button
       type="button"
       class="
@@ -182,7 +200,7 @@
   </header>
 
   <main class="h-full">
-    <section>
+    <section class="mb-10">
       <div class="container flex flex-col gap-3">
         <h2 class="text-2xl font-semibold">Логотипы</h2>
         <ul class="grid grid-cols-[repeat(auto-fit,minmax(288px,1fr))] gap-4">
@@ -217,9 +235,21 @@
         {/if}
       </div>
     </section>
-    <section>
-      <div class="container">
+    <section class="mb-10">
+      <div class="container flex flex-col gap-8">
         <h2 class="text-2xl font-semibold">Цвета</h2>
+        {#each assets.colors as colorGroup (colorGroup.groupName)}
+          <div class="flex flex-col gap-3">
+            <h3 class="text-xl font-semibold">{colorGroup.groupName}</h3>
+            <div
+              class="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4"
+            >
+              {#each colorGroup.items as color (color.hex)}
+                <ColorCard {color} />
+              {/each}
+            </div>
+          </div>
+        {/each}
       </div>
     </section>
   </main>
