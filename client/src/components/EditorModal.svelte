@@ -2,11 +2,13 @@
   import { gestures } from '../lib/actions/gestures';
   let { logo, onSave, onClose } = $props();
 
-  const PAN_SENSITIVITY = 2.5;
   const ZOOM_SENSITIVITY = 0.001;
 
   let dialogElement;
   let originalSvgDimensions = $state({ width: 0, height: 0 });
+
+  let panState = $state(null);
+  let resizeState = $state(null);
 
   let editor = $state({
     canvasWidth: 512,
@@ -40,9 +42,8 @@
       if (!dialogElement.open) {
         (async () => {
           const dims = await loadSvgDimensions(logo.url);
-          const PADDING = 0;
-          editor.canvasWidth = dims.width + PADDING * 2;
-          editor.canvasHeight = dims.height + PADDING * 2;
+          editor.canvasWidth = dims.width;
+          editor.canvasHeight = dims.height;
           editor.logoX = editor.canvasWidth / 2;
           editor.logoY = editor.canvasHeight / 2;
           editor.logoScale = 1;
@@ -68,6 +69,67 @@
   function handleClose() {
     onClose();
     dialogElement.close();
+  }
+
+  function handlePanStart(event) {
+    panState = {
+      initialLogoX: editor.logoX,
+      initialLogoY: editor.logoY,
+      initialPointerX: event.detail.x,
+      initialPointerY: event.detail.y,
+    };
+  }
+  function handlePan(event) {
+    if (!panState) return;
+
+    const screenDeltaX = event.detail.x - panState.initialPointerX;
+    const screenDeltaY = event.detail.y - panState.initialPointerY;
+
+    editor.logoX = panState.initialLogoX + screenDeltaX;
+    editor.logoY = panState.initialLogoY + screenDeltaY;
+  }
+  function handlePanEnd() {
+    panState = null;
+  }
+
+  function handleResizeStart(event) {
+    resizeState = {
+      initialCanvasWidth: editor.canvasWidth,
+      initialCanvasHeight: editor.canvasHeight,
+      initialLogoX: editor.logoX,
+      initialLogoY: editor.logoY,
+      initialPointerX: event.detail.x,
+      initialPointerY: event.detail.y,
+    };
+  }
+  function handleResize(event, edge) {
+    if (!resizeState) return;
+
+    const dx = event.detail.x - resizeState.initialPointerX;
+    const dy = event.detail.y - resizeState.initialPointerY;
+
+    switch (edge) {
+      case 'right':
+        editor.canvasWidth = resizeState.initialCanvasWidth + dx;
+        break;
+      case 'left':
+        editor.canvasWidth = resizeState.initialCanvasWidth - dx;
+        editor.logoX = resizeState.initialLogoX - dx;
+        break;
+      case 'bottom':
+        editor.canvasHeight = resizeState.initialCanvasHeight + dy;
+        break;
+      case 'top':
+        editor.canvasHeight = resizeState.initialCanvasHeight - dy;
+        editor.logoY = resizeState.initialLogoY - dy;
+        break;
+    }
+
+    if (editor.canvasWidth < 50) editor.canvasWidth = 50;
+    if (editor.canvasHeight < 50) editor.canvasHeight = 50;
+  }
+  function handleResizeEnd() {
+    resizeState = null;
   }
 
   function handleZoom(event) {
@@ -100,7 +162,7 @@
     </header>
 
     <main
-      class="flex-1 grid grid-cols-1 md:grid-cols-[1fr,280px] gap-4 p-4 overflow-hidden"
+      class="flex-1 grid grid-cols-1 md:grid-cols-[1fr_200px] gap-4 p-4 overflow-hidden"
     >
       <div
         class="bg-[#08090a] rounded-md grid place-items-center overflow-auto select-none"
@@ -114,80 +176,116 @@
             style="background-color: {logo?.background};"
             viewBox="0 0 {editor.canvasWidth} {editor.canvasHeight}"
           >
-            <g
+            <rect
               use:gestures
-              onpan={(e) => {
-                editor.logoX +=
-                  e.detail.originalEvent.movementX * PAN_SENSITIVITY;
-                editor.logoY +=
-                  e.detail.originalEvent.movementY * PAN_SENSITIVITY;
-              }}
+              onpanstart={handlePanStart}
+              onpan={handlePan}
+              onpanend={handlePanEnd}
               onzoom={handleZoom}
-            >
-              <g transform={logoTransform}>
-                <image
-                  href={logo?.url}
-                  x="0"
-                  y="0"
-                  width={originalSvgDimensions.width}
-                  height={originalSvgDimensions.height}
-                />
-              </g>
+              width={editor.canvasWidth}
+              height={editor.canvasHeight}
+              fill="transparent"
+            />
+            <g transform={logoTransform} class="pointer-events-none">
+              <image
+                href={logo?.url}
+                x="0"
+                y="0"
+                width={originalSvgDimensions.width}
+                height={originalSvgDimensions.height}
+              />
             </g>
           </svg>
 
           <div
             use:gestures
-            onpan={(e) => {
-              editor.canvasWidth += e.detail.originalEvent.movementX * 2;
-            }}
+            onpanstart={handleResizeStart}
+            onpan={(e) => handleResize(e, 'top')}
+            onpanend={handleResizeEnd}
+            class="absolute -top-1 left-1/2 -translate-x-1/2 h-2 w-16 bg-blue-500 rounded-full cursor-ns-resize"
+          ></div>
+          <div
+            use:gestures
+            onpanstart={handleResizeStart}
+            onpan={(e) => handleResize(e, 'right')}
+            onpanend={handleResizeEnd}
             class="absolute -right-1 top-1/2 -translate-y-1/2 w-2 h-16 bg-blue-500 rounded-full cursor-ew-resize"
           ></div>
           <div
             use:gestures
-            onpan={(e) => {
-              editor.canvasHeight += e.detail.originalEvent.movementY * 2;
-            }}
+            onpanstart={handleResizeStart}
+            onpan={(e) => handleResize(e, 'bottom')}
+            onpanend={handleResizeEnd}
             class="absolute -bottom-1 left-1/2 -translate-x-1/2 h-2 w-16 bg-blue-500 rounded-full cursor-ns-resize"
+          ></div>
+          <div
+            use:gestures
+            onpanstart={handleResizeStart}
+            onpan={(e) => handleResize(e, 'left')}
+            onpanend={handleResizeEnd}
+            class="absolute -left-1 top-1/2 -translate-y-1/2 w-2 h-16 bg-blue-500 rounded-full cursor-ew-resize"
           ></div>
         </div>
       </div>
 
-      <aside class="flex flex-col gap-5 text-sm">
-        <h4 class="font-bold">Холст</h4>
+      <aside class="flex flex-col gap-5 text-sm overflow-y-auto pr-2">
         <div>
-          <p class="block mb-1">Ширина: {Math.round(editor.canvasWidth)}px</p>
-          <p class="block mb-1">Высота: {Math.round(editor.canvasHeight)}px</p>
+          <h4 class="font-bold mb-2">Холст</h4>
+          <div class="space-y-1.5 text-xs">
+            <div class="flex justify-between items-center">
+              <span class="text-white/60">Ширина:</span>
+              <span class="font-mono">{Math.round(editor.canvasWidth)}px</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-white/60">Высота:</span>
+              <span class="font-mono">{Math.round(editor.canvasHeight)}px</span>
+            </div>
+          </div>
         </div>
+
         <hr class="border-white/10" />
-        <h4 class="font-bold">Логотип</h4>
+
         <div>
-          <label for="scale-slider" class="block mb-2 font-medium"
-            >Масштаб ({Math.round(editor.logoScale * 100)}%)</label
-          >
-          <input
-            id="scale-slider"
-            type="range"
-            min="0.1"
-            max="5"
-            step="0.01"
-            bind:value={editor.logoScale}
-            class="w-full"
-          />
+          <h4 class="font-bold mb-2">Логотип</h4>
+          <div class="flex flex-col gap-4">
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <label for="scale-slider" class="text-xs">Масштаб</label>
+                <span class="text-xs text-white/60"
+                  >{Math.round(editor.logoScale * 100)}%</span
+                >
+              </div>
+              <input
+                id="scale-slider"
+                type="range"
+                min="0.1"
+                max="5"
+                step="0.01"
+                bind:value={editor.logoScale}
+                class="w-full"
+              />
+            </div>
+            <div class="space-y-1.5 text-xs">
+              <div class="flex justify-between items-center">
+                <span class="text-white/60">X:</span>
+                <span class="font-mono">{Math.round(editor.logoX)}</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-white/60">Y:</span>
+                <span class="font-mono">{Math.round(editor.logoY)}</span>
+              </div>
+            </div>
+            <button
+              onclick={() => {
+                editor.logoX = editor.canvasWidth / 2;
+                editor.logoY = editor.canvasHeight / 2;
+                editor.logoScale = 1;
+              }}
+              class="w-full text-center py-2 rounded-md bg-white/10 hover:bg-white/20 text-xs"
+              >Центрировать логотип</button
+            >
+          </div>
         </div>
-        <div>
-          <p class="block mb-1">X: {Math.round(editor.logoX)}</p>
-          <p class="block mb-1">Y: {Math.round(editor.logoY)}</p>
-        </div>
-        <button
-          onclick={() => {
-            editor.logoX = editor.canvasWidth / 2;
-            editor.logoY = editor.canvasHeight / 2;
-            editor.logoScale = 1;
-          }}
-          class="w-full text-center py-2 rounded-md bg-white/10 hover:bg-white/20"
-          >Центрировать логотип</button
-        >
       </aside>
     </main>
 

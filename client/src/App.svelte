@@ -38,9 +38,9 @@
       {
         groupName: 'Основные',
         items: [
-          { name: '', hex: '#FF1847' },
-          { name: '', hex: '#FFF8F9' },
-          { name: '', hex: '#190000' },
+          { name: 'Красный', hex: '#FF1847' },
+          { name: 'Белый', hex: '#FFF8F9' },
+          { name: 'Чёрный', hex: '#190000' },
         ],
       },
       {
@@ -169,16 +169,19 @@
 </script>
 
 <div class="flex flex-col grow min-h-screen bg-[#08090a] text-white">
-  <header class="container flex flex-col items-center py-10 gap-4">
+  <header class="container flex flex-col items-center pt-10 pb-4 gap-4">
     <h1 class="text-5xl font-semibold flex flex-col items-center">
       <span class="text-center">AdsCompass</span>
       <span class="text-center">Руководство по стилю</span>
     </h1>
     <p class="bg-white/10 px-6 py-1 rounded-2xl">Базовая версия</p>
+  </header>
+
+  <div class="sticky top-4 z-10 container flex justify-center">
     <button
       type="button"
       class="
-		mt-3 px-6 py-3 bg-[#5e6ad2] rounded-lg font-semibold
+		mt-3 px-6 py-3 bg-[#5e6ad2] rounded-lg font-semibold shadow-lg shadow-[#5e6ad2]/20
 		transition-all duration-300 ease-in-out
 		focus:outline-none
 		hover:bg-[#5058b8]
@@ -197,13 +200,13 @@
         ? `Скачать выбранное (${selectedAssets.length})`
         : `Скачать все материалы`}
     </button>
-  </header>
+  </div>
 
-  <main class="h-full">
+  <main class="h-full pt-8">
     <section class="mb-10">
       <div class="container flex flex-col gap-3">
         <h2 class="text-2xl font-semibold">Логотипы</h2>
-        <ul class="grid grid-cols-[repeat(auto-fit,minmax(288px,1fr))] gap-4">
+        <ul class="grid grid-cols-[repeat(auto-fill,minmax(288px,1fr))] gap-4">
           {#each assets.logos as logo (logo.id)}
             <AssetCard
               asset={logo}
@@ -218,7 +221,9 @@
 
         {#if customAssets.length > 0}
           <h3 class="text-2xl font-semibold mt-8">Ваши вариации</h3>
-          <ul class="grid grid-cols-[repeat(auto-fit,minmax(288px,1fr))] gap-4">
+          <ul
+            class="grid grid-cols-[repeat(auto-fill,minmax(288px,1fr))] gap-4"
+          >
             {#each customAssets as logo (logo.id)}
               {@const baseLogo = assets.logos.find(
                 (l) => l.id === logo.originalId,
@@ -242,7 +247,7 @@
           <div class="flex flex-col gap-3">
             <h3 class="text-xl font-semibold">{colorGroup.groupName}</h3>
             <div
-              class="grid grid-cols-[repeat(auto-fit,minmax(200px,1fr))] gap-4"
+              class="grid grid-cols-[repeat(auto-fill,minmax(288px,1fr))] gap-4"
             >
               {#each colorGroup.items as color (color.hex)}
                 <ColorCard {color} />
