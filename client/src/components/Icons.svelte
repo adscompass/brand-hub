@@ -31,3 +31,31 @@
     />
   </svg>
 {/if}
+
+{#if icon === 'arrow-right'}
+  <svg
+    class="w-5 h-5 text-white"
+    viewBox="0 0 32 32"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <g id="_x33_-Padlock" fill="white">
+      <path
+        d="m23.71 15.29-14-14c-.39-.39-1.02-.39-1.41 0s-.39 1.02 0 1.41l13.29 13.3-13.3 13.29c-.39.39-.39 1.02 0 1.41.2.2.45.3.71.3s.51-.1.71-.29l14-14c.39-.39.39-1.03 0-1.42z"
+      />
+    </g>
+  </svg>
+{/if}
+
+{#if icon === 'arrow-left'}
+  <svg
+    class="w-5 h-5 text-white"
+    viewBox="0 0 32 32"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <g id="_x33_-Padlock" fill="white">
+      <path
+        d="m10.41 16 13.3-13.29c.39-.39.39-1.02 0-1.41s-1.02-.39-1.41 0l-14 14c-.39.39-.39 1.02 0 1.41l14 14c.19.19.44.3.7.3s.51-.1.71-.29c.39-.39.39-1.02 0-1.41z"
+      />
+    </g>
+  </svg>
+{/if}

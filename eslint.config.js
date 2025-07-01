@@ -19,7 +19,16 @@ export default defineConfig([
         ...globals.browser,
       },
     },
-    rules: {},
+    rules: {
+      'no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
+    },
   },
 
   {
@@ -31,7 +40,14 @@ export default defineConfig([
       },
     },
     rules: {
-      'no-unused-vars': 'warn',
+      'no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
     },
   },
 

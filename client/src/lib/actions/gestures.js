@@ -1,6 +1,7 @@
 export function gestures(node, params = {}) {
   let {
     enabled = true,
+    preventWheel = true,
     doubleTapTime = 300,
     holdTime = 500,
     moveThreshold = 5,
@@ -8,6 +9,7 @@ export function gestures(node, params = {}) {
     swipeMinDistance = 30,
     transformPoint = (p) => p,
     throttleTime = 16,
+    capture = true,
   } = params;
 
   const pointers = new Map();
@@ -169,7 +171,9 @@ export function gestures(node, params = {}) {
   function onPointerDown(event) {
     if (!enabled) return;
     event.preventDefault();
-    node.setPointerCapture(event.pointerId);
+    if (capture) {
+      node.setPointerCapture(event.pointerId);
+    }
     pointers.set(event.pointerId, {
       clientX: event.clientX,
       clientY: event.clientY,
@@ -331,7 +335,12 @@ export function gestures(node, params = {}) {
             !state.isPanning &&
             !wasTwoPointers
           ) {
-            dispatch('tap', buildEventDetail(event));
+            const trueTarget = document.elementFromPoint(
+              event.clientX,
+              event.clientY,
+            );
+            const detail = buildEventDetail(event, { trueTarget: trueTarget });
+            dispatch('tap', detail);
           }
 
           if (!doubleTapTimeout) {
@@ -364,7 +373,9 @@ export function gestures(node, params = {}) {
 
   function onWheel(event) {
     if (!enabled) return;
-    event.preventDefault();
+    if (preventWheel) {
+      event.preventDefault();
+    }
 
     dispatch(
       'zoom',
