@@ -80,10 +80,8 @@
   }
   function handlePan(event) {
     if (!panState) return;
-
     const screenDeltaX = event.detail.x - panState.initialPointerX;
     const screenDeltaY = event.detail.y - panState.initialPointerY;
-
     editor.logoX = panState.initialLogoX + screenDeltaX;
     editor.logoY = panState.initialLogoY + screenDeltaY;
   }
@@ -101,6 +99,7 @@
       initialPointerY: event.detail.y,
     };
   }
+
   function handleResize(event, edge) {
     if (!resizeState) return;
 
@@ -109,17 +108,20 @@
 
     switch (edge) {
       case 'right':
-        editor.canvasWidth = resizeState.initialCanvasWidth + dx;
+        // Увеличиваем ширину на удвоенное смещение
+        editor.canvasWidth = resizeState.initialCanvasWidth + dx * 2;
         break;
       case 'left':
-        editor.canvasWidth = resizeState.initialCanvasWidth - dx;
+        // Увеличиваем ширину на удвоенное смещение
+        editor.canvasWidth = resizeState.initialCanvasWidth - dx * 2;
+        // Компенсируем сдвиг логотипа на то же удвоенное смещение
         editor.logoX = resizeState.initialLogoX - dx;
         break;
       case 'bottom':
-        editor.canvasHeight = resizeState.initialCanvasHeight + dy;
+        editor.canvasHeight = resizeState.initialCanvasHeight + dy * 2;
         break;
       case 'top':
-        editor.canvasHeight = resizeState.initialCanvasHeight - dy;
+        editor.canvasHeight = resizeState.initialCanvasHeight - dy * 2;
         editor.logoY = resizeState.initialLogoY - dy;
         break;
     }
@@ -127,6 +129,7 @@
     if (editor.canvasWidth < 50) editor.canvasWidth = 50;
     if (editor.canvasHeight < 50) editor.canvasHeight = 50;
   }
+
   function handleResizeEnd() {
     resizeState = null;
   }
