@@ -1,8 +1,12 @@
 <script>
+  import { onMount } from 'svelte';
   import { gestures } from '../lib/actions/gestures';
   import Icon from './Icon.svelte';
   let { logo, onSave, onClose } = $props();
   const ZOOM_SENSITIVITY = 0.001;
+  onMount(() => {
+    console.clear();
+  });
 
   let dialogElement;
   let originalSvgDimensions = $state({ width: 0, height: 0 });
@@ -20,6 +24,40 @@
     logoScale: 1,
     logoRotate: 0,
     keepAspectRatio: false,
+    toString() {
+      return `width=${this.canvasWidth}, height=${this.canvasHeight}, x=${this.logoX}, y=${this.logoY}, scale=${this.logoScale}, rotate=${this.logoRotate}, keepAspectRatio=${this.keepAspectRatio}`;
+    },
+  });
+
+  let history = $state([]);
+  // let historyIndex = $state(-1);
+  // let isRestoring = $state(false);
+
+  $effect(() => {
+    if (history) {
+      console.clear();
+      console.log('Full history:');
+      history.forEach((entry, index) => {
+        console.log(
+          `#${index + 1}: action=${entry.action}, editorState=${entry.editorState}`,
+        );
+      });
+    }
+  });
+
+  // $inspect(history).with(console.log);
+
+  $effect(() => {
+    ({
+      canvasWidth: editor.canvasWidth,
+      canvasHeight: editor.canvasHeight,
+      logoX: editor.logoX,
+      logoY: editor.logoY,
+      logoScale: editor.logoScale,
+      logoRotate: editor.logoRotate,
+      keepAspectRatio: editor.keepAspectRatio,
+    });
+    // console.log('Editor state updated: ' + Date.now());
   });
 
   async function loadSvgDimensions(url) {
@@ -194,8 +232,31 @@
   }
 
   function handleResizeEnd() {
+    history.push({
+      action: 'resize',
+      editorState: {
+        ...editor,
+      },
+    });
+    // historyIndex += 1;
     resizeState = null;
   }
+
+  function undo() {
+    // if (historyIndex >= 0) {
+    //   const previousState = history[historyIndex].editorState;
+    //   if (historyIndex === 0) {
+    //     history = [];
+    //     historyIndex = -1;
+    //   } else {
+    //     history.splice(historyIndex, 1);
+    //   }
+    //   historyIndex -= 1;
+    //   editor = { ...previousState };
+    // }
+  }
+
+  function redo() {}
 
   function wrapAngle(angle) {
     return ((((angle + 180) % 360) + 360) % 360) - 180;
@@ -295,6 +356,14 @@
           >
             <rect
               use:gestures
+              onmiddle={() => {
+                history.push({
+                  action: 'initial',
+                  editorState: {
+                    ...editor,
+                  },
+                });
+              }}
               onpanstart={handlePanStart}
               onpan={handlePan}
               onpanend={handlePanEnd}
@@ -500,6 +569,16 @@
     <footer
       class="flex justify-end gap-4 p-4 border-t border-white/10 shrink-0"
     >
+      <button
+        onclick={undo}
+        class="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20"
+        >Отменить</button
+      >
+      <button
+        onclick={redo}
+        class="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20"
+        >Повторить</button
+      >
       <button
         onclick={handleClose}
         class="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20"
