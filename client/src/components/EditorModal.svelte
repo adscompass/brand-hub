@@ -8,6 +8,7 @@
 
   let panState = $state(null);
   let resizeState = $state(null);
+  let aspectRatio = $state(1);
 
   let editor = $state({
     canvasWidth: 512,
@@ -15,6 +16,8 @@
     logoX: 0,
     logoY: 0,
     logoScale: 1,
+    logoRotate: 0,
+    keepAspectRatio: true,
   });
 
   async function loadSvgDimensions(url) {
@@ -43,9 +46,14 @@
           const dims = await loadSvgDimensions(logo.url);
           editor.canvasWidth = dims.width;
           editor.canvasHeight = dims.height;
+          if (dims.height > 0) {
+            aspectRatio = dims.width / dims.height;
+          }
           editor.logoX = editor.canvasWidth / 2;
           editor.logoY = editor.canvasHeight / 2;
           editor.logoScale = 1;
+          editor.logoRotate = 0;
+          editor.keepAspectRatio = true;
           dialogElement.showModal();
         })();
       }
@@ -53,6 +61,14 @@
     return () => {
       document.body.classList.remove('modal-open');
     };
+  });
+
+  $effect(() => {
+    if (!editor.keepAspectRatio) {
+      if (editor.canvasHeight > 0) {
+        aspectRatio = editor.canvasWidth / editor.canvasHeight;
+      }
+    }
   });
 
   function handleSave() {
@@ -106,25 +122,43 @@
     const dx = event.detail.x - resizeState.initialPointerX;
     const dy = event.detail.y - resizeState.initialPointerY;
 
+    let newWidth = resizeState.initialCanvasWidth;
+    let newHeight = resizeState.initialCanvasHeight;
+    let logoDeltaX = 0;
+    let logoDeltaY = 0;
+
     switch (edge) {
       case 'right':
-        editor.canvasWidth = resizeState.initialCanvasWidth + dx * 2;
+      case 'left': {
+        const widthChange = (edge === 'right' ? dx : -dx) * 2;
+        newWidth = resizeState.initialCanvasWidth + widthChange;
+        if (editor.keepAspectRatio && aspectRatio > 0) {
+          newHeight = newWidth / aspectRatio;
+        }
+        if (edge === 'left') {
+          logoDeltaX = -dx * 2;
+        }
         break;
-      case 'left':
-        editor.canvasWidth = resizeState.initialCanvasWidth - dx * 2;
-        editor.logoX = resizeState.initialLogoX - dx * 2;
-        break;
+      }
+
       case 'bottom':
-        editor.canvasHeight = resizeState.initialCanvasHeight + dy * 2;
+      case 'top': {
+        const heightChange = (edge === 'bottom' ? dy : -dy) * 2;
+        newHeight = resizeState.initialCanvasHeight + heightChange;
+        if (editor.keepAspectRatio && aspectRatio > 0) {
+          newWidth = newHeight * aspectRatio;
+        }
+        if (edge === 'top') {
+          logoDeltaY = -dy * 2;
+        }
         break;
-      case 'top':
-        editor.canvasHeight = resizeState.initialCanvasHeight - dy * 2;
-        editor.logoY = resizeState.initialLogoY - dy * 2;
-        break;
+      }
     }
 
-    if (editor.canvasWidth < 50) editor.canvasWidth = 50;
-    if (editor.canvasHeight < 50) editor.canvasHeight = 50;
+    editor.canvasWidth = Math.max(50, newWidth);
+    editor.canvasHeight = Math.max(50, newHeight);
+    editor.logoX = resizeState.initialLogoX + logoDeltaX;
+    editor.logoY = resizeState.initialLogoY + logoDeltaY;
   }
 
   function handleResizeEnd() {
@@ -133,15 +167,21 @@
 
   function handleZoom(event) {
     event.preventDefault();
-    const zoomFactor = 1 - event.detail.deltaY * ZOOM_SENSITIVITY;
-    let newScale = editor.logoScale * zoomFactor;
-    editor.logoScale = Math.max(0.1, Math.min(newScale, 5));
+    if (event.detail.shiftKey) {
+      const rotateFactor = event.detail.deltaY * 0.1;
+      let newRotate = editor.logoRotate + rotateFactor;
+      editor.logoRotate = Math.max(-180, Math.min(newRotate, 180));
+    } else {
+      const zoomFactor = 1 - event.detail.deltaY * ZOOM_SENSITIVITY;
+      let newScale = editor.logoScale * zoomFactor;
+      editor.logoScale = Math.max(0.1, Math.min(newScale, 5));
+    }
   }
 
   const logoTransform = $derived(
-    `translate(${editor.logoX}, ${editor.logoY}) scale(${editor.logoScale}) translate(-${
-      originalSvgDimensions.width / 2
-    }, -${originalSvgDimensions.height / 2})`,
+    `translate(${editor.logoX}, ${editor.logoY}) rotate(${editor.logoRotate}) scale(${
+      editor.logoScale
+    }) translate(-${originalSvgDimensions.width / 2}, -${originalSvgDimensions.height / 2})`,
   );
 </script>
 
@@ -161,7 +201,7 @@
     </header>
 
     <main
-      class="flex-1 grid grid-cols-1 md:grid-cols-[1fr_200px] gap-4 p-4 overflow-hidden"
+      class="flex-1 grid grid-cols-1 md:grid-cols-[1fr_300px] gap-4 p-4 overflow-hidden"
     >
       <div
         class="bg-[#08090a] rounded-md grid place-items-center overflow-auto select-none"
@@ -239,6 +279,17 @@
               <span class="text-white/60">Высота:</span>
               <span class="font-mono">{Math.round(editor.canvasHeight)}px</span>
             </div>
+            <div class="flex items-center justify-between mt-2">
+              <label for="aspect-ratio-lock" class="text-white/60"
+                >Сохранять пропорции</label
+              >
+              <input
+                id="aspect-ratio-lock"
+                type="checkbox"
+                bind:checked={editor.keepAspectRatio}
+                class="w-4 h-4"
+              />
+            </div>
           </div>
         </div>
 
@@ -264,6 +315,23 @@
                 class="w-full"
               />
             </div>
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <label for="rotate-slider" class="text-xs">Поворот</label>
+                <span class="text-xs text-white/60"
+                  >{Math.round(editor.logoRotate)}°</span
+                >
+              </div>
+              <input
+                id="rotate-slider"
+                type="range"
+                min="-180"
+                max="180"
+                step="1"
+                bind:value={editor.logoRotate}
+                class="w-full"
+              />
+            </div>
             <div class="space-y-1.5 text-xs">
               <div class="flex justify-between items-center">
                 <span class="text-white/60">X:</span>
@@ -279,9 +347,10 @@
                 editor.logoX = editor.canvasWidth / 2;
                 editor.logoY = editor.canvasHeight / 2;
                 editor.logoScale = 1;
+                editor.logoRotate = 0;
               }}
               class="w-full text-center py-2 rounded-md bg-white/10 hover:bg-white/20 text-xs"
-              >Центрировать логотип</button
+              >Сбросить трансформации</button
             >
           </div>
         </div>
