@@ -108,21 +108,18 @@
 
     switch (edge) {
       case 'right':
-        // Увеличиваем ширину на удвоенное смещение
         editor.canvasWidth = resizeState.initialCanvasWidth + dx * 2;
         break;
       case 'left':
-        // Увеличиваем ширину на удвоенное смещение
         editor.canvasWidth = resizeState.initialCanvasWidth - dx * 2;
-        // Компенсируем сдвиг логотипа на то же удвоенное смещение
-        editor.logoX = resizeState.initialLogoX - dx;
+        editor.logoX = resizeState.initialLogoX - dx * 2;
         break;
       case 'bottom':
         editor.canvasHeight = resizeState.initialCanvasHeight + dy * 2;
         break;
       case 'top':
         editor.canvasHeight = resizeState.initialCanvasHeight - dy * 2;
-        editor.logoY = resizeState.initialLogoY - dy;
+        editor.logoY = resizeState.initialLogoY - dy * 2;
         break;
     }
 
