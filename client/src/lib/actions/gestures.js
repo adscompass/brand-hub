@@ -10,6 +10,7 @@ export function gestures(node, params = {}) {
     transformPoint = (p) => p,
     throttleTime = 16,
     capture = true,
+    recognizeDoubleTap = true,
   } = params;
 
   const pointers = new Map();
@@ -275,7 +276,9 @@ export function gestures(node, params = {}) {
   function onPointerUp(event) {
     if (!enabled) return;
     event.preventDefault();
-    node.releasePointerCapture(event.pointerId);
+    if (capture) {
+      node.releasePointerCapture(event.pointerId);
+    }
 
     const wasTwoPointers = pointers.size === 2;
 
@@ -329,29 +332,37 @@ export function gestures(node, params = {}) {
       }
       switch (event.button) {
         case 0:
-          if (
-            !state.isHolding &&
-            !doubleTapTimeout &&
-            !state.isPanning &&
-            !wasTwoPointers
-          ) {
-            const trueTarget = document.elementFromPoint(
-              event.clientX,
-              event.clientY,
-            );
-            const detail = buildEventDetail(event, { trueTarget: trueTarget });
-            dispatch('tap', detail);
-          }
+          if (!state.isHolding && !state.isPanning && !wasTwoPointers) {
+            if (recognizeDoubleTap) {
+              if (!doubleTapTimeout) {
+                const trueTarget = document.elementFromPoint(
+                  event.clientX,
+                  event.clientY,
+                );
+                const detail = buildEventDetail(event, {
+                  trueTarget: trueTarget,
+                });
+                dispatch('tap', detail);
 
-          if (!doubleTapTimeout) {
-            doubleTapTimeout = setTimeout(() => {
-              clearTimeout(doubleTapTimeout);
-              doubleTapTimeout = null;
-            }, doubleTapTime);
-          } else {
-            dispatch('double', buildEventDetail(event));
-            clearTimeout(doubleTapTimeout);
-            doubleTapTimeout = null;
+                doubleTapTimeout = setTimeout(() => {
+                  clearTimeout(doubleTapTimeout);
+                  doubleTapTimeout = null;
+                }, doubleTapTime);
+              } else {
+                dispatch('double', buildEventDetail(event));
+                clearTimeout(doubleTapTimeout);
+                doubleTapTimeout = null;
+              }
+            } else {
+              const trueTarget = document.elementFromPoint(
+                event.clientX,
+                event.clientY,
+              );
+              const detail = buildEventDetail(event, {
+                trueTarget: trueTarget,
+              });
+              dispatch('tap', detail);
+            }
           }
           break;
         case 1:
@@ -442,6 +453,9 @@ export function gestures(node, params = {}) {
         swipeMinDistance,
         transformPoint,
         throttleTime,
+        capture,
+        recognizeDoubleTap,
+        preventWheel,
       } = params);
       if (throttleTime !== oldThrottleTime) {
         setupThrottlers(throttleTime);

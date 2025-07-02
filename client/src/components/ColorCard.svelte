@@ -92,7 +92,7 @@
 </script>
 
 <div
-  use:gestures={{ preventWheel: false }}
+  use:gestures={{ preventWheel: false, recognizeDoubleTap: false }}
   ontap={handleTap}
   onswipeleft={() => cycleFormat('next')}
   onswiperight={() => cycleFormat('prev')}
