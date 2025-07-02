@@ -241,6 +241,26 @@
     editor.logoRotate = wrapAngle(editor.logoRotate);
     rotateState = null;
   }
+
+  let scaleInput = $state('100');
+
+  $effect(() => {
+    const currentInputValue = parseFloat(scaleInput);
+    const realScalePercent = Math.round(editor.logoScale * 100);
+
+    if (currentInputValue !== realScalePercent) {
+      scaleInput = realScalePercent.toString();
+    }
+  });
+
+  $effect(() => {
+    const newScale = parseFloat(scaleInput) / 100;
+    if (!isNaN(newScale) && newScale > 0) {
+      if (Math.abs(editor.logoScale - newScale) > 0.001) {
+        editor.logoScale = Math.max(0.1, Math.min(newScale, 5));
+      }
+    }
+  });
 </script>
 
 <dialog
@@ -333,13 +353,35 @@
         <div>
           <h4 class="font-bold mb-2">Холст</h4>
           <div class="space-y-1.5 text-xs">
-            <div class="flex justify-between items-center">
+            <div
+              class="grid grid-cols-[1fr_80px] place-content-center items-center mb-2"
+            >
               <span class="text-white/60">Ширина:</span>
-              <span class="font-mono">{Math.round(editor.canvasWidth)}px</span>
+              <div class="grid grid-cols-[1fr_14px] items-center gap-1">
+                <input
+                  type="number"
+                  name="canvas-width"
+                  id="canvas-width"
+                  bind:value={editor.canvasWidth}
+                  class="w-full bg-transparent border border-white/20 rounded px-2 py-1 text-white"
+                />
+                <span class="text-white/60">px</span>
+              </div>
             </div>
-            <div class="flex justify-between items-center">
+            <div
+              class="grid grid-cols-[1fr_80px] place-content-center items-center mb-2"
+            >
               <span class="text-white/60">Высота:</span>
-              <span class="font-mono">{Math.round(editor.canvasHeight)}px</span>
+              <div class="grid grid-cols-[1fr_14px] items-center gap-1">
+                <input
+                  type="number"
+                  name="canvas-height"
+                  id="canvas-height"
+                  bind:value={editor.canvasHeight}
+                  class="w-full bg-transparent border border-white/20 rounded px-2 py-1 text-white"
+                />
+                <span class="text-white/60">px</span>
+              </div>
             </div>
             <div class="flex items-center justify-between mt-2">
               <label for="aspect-ratio-lock" class="text-white/60"
@@ -361,28 +403,46 @@
           <h4 class="font-bold mb-2">Логотип</h4>
           <div class="flex flex-col gap-4">
             <div>
-              <div class="flex justify-between items-center mb-2">
+              <div
+                class="grid grid-cols-[1fr_80px] place-content-center items-center mb-2"
+              >
                 <label for="scale-slider" class="text-xs">Масштаб</label>
-                <span class="text-xs text-white/60"
-                  >{Math.round(editor.logoScale * 100)}%</span
-                >
+                <div class="flex justify-between items-center">
+                  <input
+                    id="scale-slider"
+                    type="number"
+                    min="0.1"
+                    max="5"
+                    step="0.1"
+                    bind:value={editor.logoScale}
+                    class="w-full bg-transparent border border-white/20 rounded px-2 py-0.5 text-white text-right"
+                  />
+                </div>
               </div>
               <input
                 id="scale-slider"
                 type="range"
                 min="0.1"
                 max="5"
-                step="0.01"
+                step="0.1"
                 bind:value={editor.logoScale}
                 class="w-full"
               />
             </div>
             <div>
-              <div class="flex justify-between items-center mb-2">
+              <div
+                class="grid grid-cols-[1fr_80px] place-content-center items-center mb-2"
+              >
                 <label for="rotate-slider" class="text-xs">Поворот</label>
-                <span class="text-xs text-white/60"
-                  >{Math.round(editor.logoRotate)}°</span
-                >
+                <div class="flex justify-between items-center">
+                  <input
+                    type="number"
+                    bind:value={editor.logoRotate}
+                    min="-180"
+                    max="180"
+                    class="w-full bg-transparent border border-white/20 rounded px-2 py-1 text-white text-right"
+                  />
+                </div>
               </div>
               <input
                 id="rotate-slider"
@@ -395,13 +455,31 @@
               />
             </div>
             <div class="space-y-1.5 text-xs">
-              <div class="flex justify-between items-center">
-                <span class="text-white/60">X:</span>
-                <span class="font-mono">{Math.round(editor.logoX)}</span>
+              <div
+                class="grid grid-cols-[1fr_80px] place-content-center items-center mb-2"
+              >
+                <label for="logo-x" class="text-white/60">X:</label>
+                <input
+                  step="1"
+                  name="logo-x"
+                  id="logo-x"
+                  type="number"
+                  bind:value={editor.logoX}
+                  class="w-full bg-transparent border border-white/20 rounded px-2 py-1 text-white text-right"
+                />
               </div>
-              <div class="flex justify-between items-center">
-                <span class="text-white/60">Y:</span>
-                <span class="font-mono">{Math.round(editor.logoY)}</span>
+              <div
+                class="grid grid-cols-[1fr_80px] place-content-center items-center mb-2"
+              >
+                <label for="logo-y" class="text-white/60">Y:</label>
+                <input
+                  step="1"
+                  name="logo-y"
+                  id="logo-y"
+                  type="number"
+                  bind:value={editor.logoY}
+                  class="w-full bg-transparent border border-white/20 rounded px-2 py-1 text-white text-right"
+                />
               </div>
             </div>
             <button
