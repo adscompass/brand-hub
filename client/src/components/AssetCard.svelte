@@ -74,7 +74,8 @@
           viewBox="0 0 {asset.canvasWidth} {asset.canvasHeight}"
         >
           <g
-            transform="translate({asset.logoX}, {asset.logoY}) scale({asset.logoScale}) translate(-{asset
+            transform="translate({asset.logoX}, {asset.logoY}) rotate({asset.logoRotate ||
+              0}) scale({asset.logoScale}) translate(-{asset
               .originalSvgDimensions.width / 2}, -{asset.originalSvgDimensions
               .height / 2})"
           >

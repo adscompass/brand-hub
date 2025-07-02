@@ -94,15 +94,45 @@
       initialLogoY: editor.logoY,
       initialPointerX: event.detail.x,
       initialPointerY: event.detail.y,
+      axisLock: null,
     };
   }
+
   function handlePan(event) {
     if (!panState) return;
+
     const screenDeltaX = event.detail.x - panState.initialPointerX;
     const screenDeltaY = event.detail.y - panState.initialPointerY;
-    editor.logoX = panState.initialLogoX + screenDeltaX;
-    editor.logoY = panState.initialLogoY + screenDeltaY;
+
+    let finalX = panState.initialLogoX + screenDeltaX;
+    let finalY = panState.initialLogoY + screenDeltaY;
+
+    if (event.detail.shiftKey) {
+      if (!panState.axisLock) {
+        if (Math.abs(screenDeltaX) > 5 || Math.abs(screenDeltaY) > 5) {
+          if (Math.abs(screenDeltaX) > Math.abs(screenDeltaY)) {
+            panState.axisLock = { axis: 'y', position: finalY };
+          } else {
+            panState.axisLock = { axis: 'x', position: finalX };
+          }
+        }
+      }
+
+      if (panState.axisLock) {
+        if (panState.axisLock.axis === 'x') {
+          finalX = panState.axisLock.position;
+        } else {
+          finalY = panState.axisLock.position;
+        }
+      }
+    } else {
+      panState.axisLock = null;
+    }
+
+    editor.logoX = finalX;
+    editor.logoY = finalY;
   }
+
   function handlePanEnd() {
     panState = null;
   }

@@ -125,10 +125,16 @@
 
             const innerSvgContent = extractInnerSvg(originalSvgText);
 
-            const { canvasWidth, canvasHeight, logoX, logoY, logoScale } =
-              customLogo;
+            const {
+              canvasWidth,
+              canvasHeight,
+              logoX,
+              logoY,
+              logoScale,
+              logoRotate,
+            } = customLogo;
 
-            const transform = `translate(${logoX}, ${logoY}) scale(${logoScale}) translate(-${
+            const transform = `translate(${logoX}, ${logoY}) rotate(${logoRotate || 0}) scale(${logoScale}) translate(-${
               customLogo.originalSvgDimensions.width / 2
             }, -${customLogo.originalSvgDimensions.height / 2})`;
 
