@@ -1,5 +1,6 @@
 <script>
   import { gestures } from '../lib/actions/gestures';
+  import Icon from './Icon.svelte';
   let { logo, onSave, onClose } = $props();
   const ZOOM_SENSITIVITY = 0.001;
 
@@ -7,6 +8,7 @@
   let originalSvgDimensions = $state({ width: 0, height: 0 });
 
   let panState = $state(null);
+  let rotateState = $state(null);
   let resizeState = $state(null);
   let aspectRatio = $state(1);
 
@@ -165,12 +167,16 @@
     resizeState = null;
   }
 
+  function wrapAngle(angle) {
+    return ((((angle + 180) % 360) + 360) % 360) - 180;
+  }
+
   function handleZoom(event) {
     event.preventDefault();
     if (event.detail.shiftKey) {
       const rotateFactor = event.detail.deltaY * 0.1;
       let newRotate = editor.logoRotate + rotateFactor;
-      editor.logoRotate = Math.max(-180, Math.min(newRotate, 180));
+      editor.logoRotate = wrapAngle(newRotate);
     } else {
       const zoomFactor = 1 - event.detail.deltaY * ZOOM_SENSITIVITY;
       let newScale = editor.logoScale * zoomFactor;
@@ -190,11 +196,20 @@
     editor.logoScale = Math.max(0.1, Math.min(newScale, 5));
   }
 
+  function handleRotateStart() {
+    rotateState = {
+      initialLogoRotate: editor.logoRotate,
+    };
+  }
+
   function handleRotate(event) {
-    event.preventDefault();
-    const rotateFactor = event.detail.rotation * 0.1;
-    let newRotate = editor.logoRotate + rotateFactor;
-    editor.logoRotate = Math.max(-180, Math.min(newRotate, 180));
+    if (!rotateState) return;
+    editor.logoRotate = rotateState.initialLogoRotate + event.detail.rotation;
+  }
+
+  function handleRotateEnd() {
+    editor.logoRotate = wrapAngle(editor.logoRotate);
+    rotateState = null;
   }
 </script>
 
@@ -208,8 +223,8 @@
       class="flex items-center justify-between p-4 border-b border-white/10 shrink-0"
     >
       <h3 class="text-lg font-semibold">Настройка: {logo?.name}</h3>
-      <button onclick={handleClose} class="p-1 rounded-full hover:bg-white/10"
-        >×</button
+      <button onclick={handleClose} class="p-2 rounded-full hover:bg-white/10"
+        ><Icon name="close" /></button
       >
     </header>
 
@@ -235,7 +250,9 @@
               onpanend={handlePanEnd}
               onzoom={handleZoom}
               onpinch={handlePinch}
+              onrotatestart={handleRotateStart}
               onrotate={handleRotate}
+              onrotateend={handleRotateEnd}
               width={editor.canvasWidth}
               height={editor.canvasHeight}
               fill="transparent"

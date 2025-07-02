@@ -1,7 +1,7 @@
 <script>
   import { gestures } from '../lib/actions/gestures.js';
   import convert from 'color-convert';
-  import Icons from './Icons.svelte';
+  import Icon from './Icon.svelte';
 
   let { color } = $props();
   let copied = $state(false);
@@ -120,7 +120,7 @@
       aria-label="Предыдущий формат"
       data-arrow="prev"
     >
-      <Icons icon="arrow-left" />
+      <Icon name="arrow-left" />
     </button>
     <button
       type="button"
@@ -128,7 +128,7 @@
       aria-label="Следующий формат"
       data-arrow="next"
     >
-      <Icons icon="arrow-right" />
+      <Icon name="arrow-right" />
     </button>
   </div>
 

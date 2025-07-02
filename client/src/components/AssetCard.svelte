@@ -1,5 +1,5 @@
 <script>
-  import Icons from './Icons.svelte';
+  import Icon from './Icon.svelte';
 
   let {
     asset,
@@ -93,7 +93,7 @@
     <span
       class="absolute top-4 right-4 w-7 h-7 rounded-md border-2 border-white/80 bg-black/20 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 group-has-[input:checked]:opacity-100 group-has-[input:focus-visible]:opacity-100 group-has-[button:focus-visible]:opacity-100"
     >
-      <Icons icon="check" />
+      <Icon name="check" />
     </span>
   </label>
 
@@ -105,7 +105,7 @@
       title="Настроить логотип"
       aria-label="Настроить логотип"
     >
-      <Icons icon="edit" />
+      <Icon name="edit" />
     </button>
   {/if}
 </li>
