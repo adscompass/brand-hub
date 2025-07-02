@@ -17,7 +17,7 @@
     logoY: 0,
     logoScale: 1,
     logoRotate: 0,
-    keepAspectRatio: true,
+    keepAspectRatio: false,
   });
 
   async function loadSvgDimensions(url) {
@@ -53,7 +53,7 @@
           editor.logoY = editor.canvasHeight / 2;
           editor.logoScale = 1;
           editor.logoRotate = 0;
-          editor.keepAspectRatio = true;
+          editor.keepAspectRatio = false;
           dialogElement.showModal();
         })();
       }
@@ -183,6 +183,19 @@
       editor.logoScale
     }) translate(-${originalSvgDimensions.width / 2}, -${originalSvgDimensions.height / 2})`,
   );
+
+  function handlePinch(event) {
+    event.preventDefault();
+    let newScale = editor.logoScale * (1 + (event.detail.scale - 1) * 0.5);
+    editor.logoScale = Math.max(0.1, Math.min(newScale, 5));
+  }
+
+  function handleRotate(event) {
+    event.preventDefault();
+    const rotateFactor = event.detail.rotation * 0.1;
+    let newRotate = editor.logoRotate + rotateFactor;
+    editor.logoRotate = Math.max(-180, Math.min(newRotate, 180));
+  }
 </script>
 
 <dialog
@@ -221,6 +234,8 @@
               onpan={handlePan}
               onpanend={handlePanEnd}
               onzoom={handleZoom}
+              onpinch={handlePinch}
+              onrotate={handleRotate}
               width={editor.canvasWidth}
               height={editor.canvasHeight}
               fill="transparent"
