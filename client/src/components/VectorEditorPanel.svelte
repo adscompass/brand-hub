@@ -165,6 +165,16 @@
     editor.logoRotate = wrapAngle(editor.logoRotate);
     rotateState = null;
   }
+
+  export function getExportData() {
+    return {
+      originalSvgDimensions: {
+        width: logo.width,
+        height: logo.height,
+      },
+      extension: 'svg',
+    };
+  }
 </script>
 
 <div

@@ -171,42 +171,66 @@
 
           const customLogo = customAssets.find((l) => l.id === assetId);
           if (customLogo) {
-            const baseLogo = assets.logos.find(
-              (l) => l.id === customLogo.originalId,
-            );
-            const response = await fetch(baseLogo.url);
-            const originalSvgText = await response.text();
+            // --- НОВАЯ ЛОГИКА ОБРАБОТКИ СОХРАНЕНИЙ ---
+            if (customLogo.extension === 'svg') {
+              // Логика для SVG-ассетов (твоя текущая)
+              const baseLogo = assets.logos.find(
+                (l) => l.id === customLogo.originalId,
+              );
+              const response = await fetch(baseLogo.url);
+              const originalSvgText = await response.text();
 
-            const innerSvgContent = extractInnerSvg(originalSvgText);
+              const innerSvgContent = extractInnerSvg(originalSvgText);
 
-            const {
-              canvasWidth,
-              canvasHeight,
-              logoX,
-              logoY,
-              logoScale,
-              logoRotate,
-            } = customLogo;
+              const {
+                canvasWidth,
+                canvasHeight,
+                logoX,
+                logoY,
+                logoScale,
+                logoRotate,
+              } = customLogo; // Эти данные приходят из EditorModal
 
-            const transform = `translate(${logoX}, ${logoY}) rotate(${logoRotate || 0}) scale(${logoScale}) translate(-${
-              customLogo.originalSvgDimensions.width / 2
-            }, -${customLogo.originalSvgDimensions.height / 2})`;
+              // originalSvgDimensions теперь приходит из customLogo
+              const originalSvgWidth = customLogo.originalSvgDimensions.width;
+              const originalSvgHeight = customLogo.originalSvgDimensions.height;
 
-            const newSvgText = `
-              <svg 
-                width="${canvasWidth}" 
-                height="${canvasHeight}" 
-                viewBox="0 0 ${canvasWidth} ${canvasHeight}" 
-                xmlns="http://www.w3.org/2000/svg">
+              const transform = `translate(${logoX}, ${logoY}) rotate(${logoRotate || 0}) scale(${logoScale}) translate(-${
+                originalSvgWidth / 2
+              }, -${originalSvgHeight / 2})`;
 
-                <g transform="${transform}">
-                  ${innerSvgContent}
-                </g>
-              </svg>
-						`;
+              const newSvgText = `
+                <svg 
+                  width="${canvasWidth}" 
+                  height="${canvasHeight}" 
+                  viewBox="0 0 ${canvasWidth} ${canvasHeight}" 
+                  xmlns="http://www.w3.org/2000/svg">
 
-            const filename = `${customLogo.id}.svg`;
-            logosFolder.file(filename, newSvgText.trim());
+                  <g transform="${transform}">
+                    ${innerSvgContent}
+                  </g>
+                </svg>
+							`;
+
+              const filename = `${customLogo.id}.svg`;
+              logosFolder.file(filename, newSvgText.trim());
+            } else if (['png', 'jpg'].includes(customLogo.extension)) {
+              // Логика для растровых ассетов (используем dataUrl)
+              if (customLogo.dataUrl) {
+                const filename = `${customLogo.id}.${customLogo.extension}`;
+                // JSZip может принимать Base64 напрямую
+                const base64Data = customLogo.dataUrl.split(',')[1];
+                logosFolder.file(filename, base64Data, { base64: true });
+              } else {
+                console.warn(
+                  `Data URL не найден для кастомного ${customLogo.extension} логотипа ${customLogo.id}.`,
+                );
+              }
+            } else {
+              console.warn(
+                `Неподдерживаемый формат для кастомного логотипа при скачивании: ${customLogo.extension}`,
+              );
+            }
           }
         } catch (error) {
           console.error(`Ошибка при обработке ассета ${assetId}:`, error);

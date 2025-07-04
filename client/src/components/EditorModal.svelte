@@ -5,6 +5,7 @@
   let { logo, onSave, onClose } = $props();
 
   let dialogElement;
+  let activeEditorPanel = $state(null);
 
   let editor = $state({
     canvasWidth: 512,
@@ -37,14 +38,31 @@
     };
   });
 
-  function handleSave() {
+  async function handleSave() {
+    if (
+      !activeEditorPanel ||
+      typeof activeEditorPanel.getExportData !== 'function'
+    ) {
+      console.error('Активный редактор не предоставляет метод getExportData()');
+      return;
+    }
+
+    const exportData = await activeEditorPanel.getExportData();
+
+    if (!exportData) {
+      console.error('Не удалось получить данные для экспорта из редактора.');
+      return;
+    }
+
     const customAsset = {
       originalId: logo.id,
-      ...editor,
-      originalSvgDimensions: {
-        width: logo.width,
-        height: logo.height,
-      },
+      canvasWidth: editor.canvasWidth,
+      canvasHeight: editor.canvasHeight,
+      logoX: editor.logoX,
+      logoY: editor.logoY,
+      logoScale: editor.logoScale,
+      logoRotate: editor.logoRotate,
+      ...exportData,
     };
     onSave(customAsset);
     dialogElement.close();
@@ -78,9 +96,13 @@
         class="bg-[#08090a] rounded-md grid place-items-center overflow-auto select-none"
       >
         {#if logo.extension === 'svg'}
-          <VectorEditorPanel bind:editor {logo} />
+          <VectorEditorPanel bind:editor {logo} bind:this={activeEditorPanel} />
         {:else if logo.extension === 'png' || logo.extension === 'jpg'}
-          <RasterEditorPanel bind:editor {logo} />{:else}
+          <RasterEditorPanel
+            bind:editor
+            {logo}
+            bind:this={activeEditorPanel}
+          />{:else}
           <div
             class="flex items-center justify-center w-full h-full text-white/60"
           >

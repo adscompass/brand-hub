@@ -229,7 +229,7 @@
     rotateState = null;
   }
 
-  function _getExportData() {
+  export function getExportData() {
     if (!canvasElement) {
       console.error('Canvas element not available for export.');
       return null;
