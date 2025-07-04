@@ -17,14 +17,14 @@
         color: '#000000',
         extension: 'svg',
       },
-      // {
-      //   id: 'random-test',
-      //   name: 'Тестовый логотип',
-      //   url: '/logos/random-test.jpg',
-      //   background: '#5e6ad2',
-      //   color: '#ffffff',
-      //   extension: 'png',
-      // }
+      {
+        id: 'random-test',
+        name: 'Тестовый логотип',
+        url: '/logos/random-test.jpg',
+        background: '#5e6ad2',
+        color: '#ffffff',
+        extension: 'png',
+      },
       // {
       //   id: 'goldlead-logo-light',
       //   name: 'Goldlead светлый логотип',
@@ -62,17 +62,45 @@
   });
 
   async function getDimensions(logo) {
-    try {
-      let response = await fetch(logo.url);
-      const svgText = await response.text();
-      const viewBoxMatch = svgText.match(/viewBox="0 0 ([\d.]+) ([\d.]+)"/);
-      if (viewBoxMatch) {
-        const width = parseFloat(viewBoxMatch[1]);
-        const height = parseFloat(viewBoxMatch[2]);
-        return { width, height };
+    const extension = logo.extension || logo.url.split('.').pop() || 'svg';
+
+    if (extension === 'svg') {
+      try {
+        let response = await fetch(logo.url);
+        if (!response.ok)
+          throw new Error(`HTTP error! status: ${response.status}`);
+        const svgText = await response.text();
+        const viewBoxMatch = svgText.match(/viewBox="0 0 ([\d.]+) ([\d.]+)"/);
+        if (viewBoxMatch) {
+          const width = parseFloat(viewBoxMatch[1]);
+          const height = parseFloat(viewBoxMatch[2]);
+          return { width, height };
+        } else {
+          console.warn(
+            `SVG ${logo.url} has no viewBox. Returning default dimensions.`,
+          );
+          return { width: 400, height: 300 };
+        }
+      } catch (error) {
+        console.error('Error loading SVG dimensions or viewBox:', error);
+        return { width: 400, height: 300 };
       }
-    } catch (error) {
-      console.error('Error loading logo dimensions:', error);
+    } else if (['png', 'jpg'].includes(extension)) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          resolve({ width: img.width, height: img.height });
+        };
+        img.onerror = (e) => {
+          console.error(`Failed to load raster image: ${logo.url}`, e);
+          resolve({ width: 400, height: 300 });
+        };
+        img.src = logo.url;
+      });
+    } else {
+      console.warn(
+        `Unsupported logo extension: ${extension}. Returning default dimensions.`,
+      );
       return { width: 400, height: 300 };
     }
   }

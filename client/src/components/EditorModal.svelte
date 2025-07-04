@@ -1,5 +1,6 @@
 <script>
   import Icon from './Icon.svelte';
+  import RasterEditorPanel from './RasterEditorPanel.svelte';
   import VectorEditorPanel from './VectorEditorPanel.svelte';
   let { logo, onSave, onClose } = $props();
 
@@ -13,27 +14,6 @@
     logoScale: 1,
     logoRotate: 0,
     keepAspectRatio: false,
-  });
-
-  $effect(() => {
-    if (logo && dialogElement) {
-      document.body.classList.add('modal-open');
-      if (!dialogElement.open) {
-        (async () => {
-          editor.canvasWidth = logo.width;
-          editor.canvasHeight = logo.height;
-          editor.logoX = editor.canvasWidth / 2;
-          editor.logoY = editor.canvasHeight / 2;
-          editor.logoScale = 1;
-          editor.logoRotate = 0;
-          editor.keepAspectRatio = false;
-          dialogElement.showModal();
-        })();
-      }
-    }
-    return () => {
-      document.body.classList.remove('modal-open');
-    };
   });
 
   $effect(() => {
@@ -97,7 +77,16 @@
       <div
         class="bg-[#08090a] rounded-md grid place-items-center overflow-auto select-none"
       >
-        <VectorEditorPanel bind:editor {logo} />
+        {#if logo.extension === 'svg'}
+          <VectorEditorPanel bind:editor {logo} />
+        {:else if logo.extension === 'png' || logo.extension === 'jpg'}
+          <RasterEditorPanel bind:editor {logo} />{:else}
+          <div
+            class="flex items-center justify-center w-full h-full text-white/60"
+          >
+            Логотип в формате {logo.extension} не поддерживается для редактирования.
+          </div>
+        {/if}
       </div>
 
       <aside class="flex flex-col gap-5 text-sm overflow-y-auto pr-2">
