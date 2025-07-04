@@ -1,5 +1,5 @@
 <script>
-  const assets = {
+  const assets = $state({
     logos: [
       {
         id: 'adscompass-logo-light',
@@ -59,7 +59,32 @@
         ],
       },
     ],
-  };
+  });
+
+  async function getDimensions(logo) {
+    try {
+      let response = await fetch(logo.url);
+      const svgText = await response.text();
+      const viewBoxMatch = svgText.match(/viewBox="0 0 ([\d.]+) ([\d.]+)"/);
+      if (viewBoxMatch) {
+        const width = parseFloat(viewBoxMatch[1]);
+        const height = parseFloat(viewBoxMatch[2]);
+        return { width, height };
+      }
+    } catch (error) {
+      console.error('Error loading logo dimensions:', error);
+      return { width: 400, height: 300 };
+    }
+  }
+
+  onMount(async () => {
+    for (const logo of assets.logos) {
+      const dimensions = await getDimensions(logo);
+      logo.width = dimensions.width;
+      logo.height = dimensions.height;
+    }
+    assets.logos = assets.logos;
+  });
 
   let selectedAssets = $state([]);
   let customAssets = $state([]);
@@ -69,6 +94,7 @@
   import EditorModal from './components/EditorModal.svelte';
   import AssetCard from './components/AssetCard.svelte';
   import ColorCard from './components/ColorCard.svelte';
+  import { onMount } from 'svelte';
 
   function extractInnerSvg(svgText) {
     const svgTagRegex = /<svg[^>]*>([\s\S]*)<\/svg>/;
