@@ -45,7 +45,7 @@
       class="object-contain"
       class:w-full={type === 'original'}
       class:h-full={type === 'original'}
-      class:grid={type === 'original'}
+      class:grid={type === 'original' && asset.extension === 'svg'}
       class:place-items-center={type === 'original'}
       class:max-w-full={type === 'custom'}
       class:max-h-full={type === 'custom'}
@@ -60,7 +60,7 @@
         <img
           src={asset.url}
           alt={asset.name}
-          class="pointer-events-none select-none"
+          class="pointer-events-none select-none w-full h-full object-contain"
         />
         <figcaption
           class="absolute top-4 left-4 font-semibold opacity-0 pointer-coarse:opacity-100 text-shadow-lg group-hover:opacity-100 transition-opacity duration-300"
