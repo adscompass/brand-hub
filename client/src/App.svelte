@@ -143,9 +143,14 @@
   }
 
   function handleSaveCustomAsset(customAsset) {
+    const originalLogo = assets.logos.find(
+      (l) => l.id === customAsset.originalId,
+    );
+    const newId = `${originalLogo ? originalLogo.id : 'custom'}-custom-${Date.now()}`;
+
     const newAsset = {
       ...customAsset,
-      id: `custom-${Date.now()}`,
+      id: newId,
       type: 'custom',
     };
     customAssets = [...customAssets, newAsset];
