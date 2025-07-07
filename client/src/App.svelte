@@ -1,4 +1,57 @@
 <script>
+  import JSZip from 'jszip';
+  import EditorModal from './components/EditorModal.svelte';
+  import AssetCard from './components/AssetCard.svelte';
+  import ColorCard from './components/ColorCard.svelte';
+  import TypographyPlayground from './components/TypographyPlayground.svelte';
+  import { onMount, onDestroy } from 'svelte';
+
+  const konamiCodeSequence = [
+    'ArrowUp',
+    'ArrowUp',
+    'ArrowDown',
+    'ArrowDown',
+    'ArrowLeft',
+    'ArrowRight',
+    'ArrowLeft',
+    'ArrowRight',
+    'b',
+    'a',
+  ];
+  let konamiCodePosition = 0;
+  let konamiActive = $state(false);
+
+  function handleKeyDown(event) {
+    const expectedKey = konamiCodeSequence[konamiCodePosition];
+
+    if (event.key.toLowerCase() === expectedKey.toLowerCase()) {
+      konamiCodePosition++;
+
+      if (konamiCodePosition === konamiCodeSequence.length) {
+        console.log(
+          '%cКОД KONAMI АКТИВИРОВАН!',
+          'color: limegreen; font-size: 24px; font-weight: bold;',
+        );
+        konamiActive = true;
+        setTimeout(() => {
+          konamiActive = false;
+        }, 10000);
+
+        konamiCodePosition = 0;
+      }
+    } else {
+      konamiCodePosition = 0;
+    }
+  }
+
+  onMount(() => {
+    document.addEventListener('keydown', handleKeyDown);
+  });
+
+  onDestroy(() => {
+    document.removeEventListener('keydown', handleKeyDown);
+  });
+
   const assets = $state({
     logos: [
       {
@@ -137,6 +190,16 @@
   }
 
   onMount(async () => {
+    console.log(
+      '%cТы нашел это!🧐',
+      'color: #5e6ad2; font-size: 20px; font-weight: bold;',
+    );
+    console.log(
+      '%cОтличная работа, разработчик!',
+      'color: #5e6ad2; font-size: 16px; font-weight: semibold;',
+    );
+    console.log('https://www.youtube.com/watch?v=dQw4w9WgXcQ');
+
     for (const logo of assets.logos) {
       const dimensions = await getDimensions(logo);
       logo.width = dimensions.width;
@@ -148,13 +211,6 @@
   let selectedAssets = $state([]);
   let customAssets = $state([]);
   let editingLogo = $state(null);
-
-  import JSZip from 'jszip';
-  import EditorModal from './components/EditorModal.svelte';
-  import AssetCard from './components/AssetCard.svelte';
-  import ColorCard from './components/ColorCard.svelte';
-  import TypographyPlayground from './components/TypographyPlayground.svelte';
-  import { onMount } from 'svelte';
 
   function extractInnerSvg(svgText) {
     const svgTagRegex = /<svg[^>]*>([\s\S]*)<\/svg>/;
@@ -361,7 +417,10 @@
   }
 </script>
 
-<div class="flex flex-col grow min-h-screen bg-[#08090a] text-white">
+<div
+  class="flex flex-col grow min-h-screen bg-[#08090a] text-white"
+  class:rave-mode={konamiActive}
+>
   <header class="container flex flex-col items-center pt-10 pb-4 gap-4">
     <h1 class="text-5xl font-semibold flex flex-col items-center">
       <span class="text-center">AdsCompass</span>
@@ -485,3 +544,47 @@
     onClose={() => (editingLogo = null)}
   />
 {/if}
+
+<style>
+  @keyframes rainbow-flicker {
+    0% {
+      filter: hue-rotate(0deg) saturate(1);
+    }
+    25% {
+      filter: hue-rotate(90deg) saturate(1.5);
+    }
+    50% {
+      filter: hue-rotate(180deg) saturate(1);
+    }
+    75% {
+      filter: hue-rotate(270deg) saturate(1.5);
+    }
+    100% {
+      filter: hue-rotate(360deg) saturate(1);
+    }
+  }
+
+  @keyframes subtle-shake {
+    0% {
+      transform: translate(0, 0);
+    }
+    25% {
+      transform: translate(10px, -10px);
+    }
+    50% {
+      transform: translate(-10px, 10px);
+    }
+    75% {
+      transform: translate(10px, 10px);
+    }
+    100% {
+      transform: translate(0, 0);
+    }
+  }
+
+  .rave-mode {
+    animation:
+      rainbow-flicker 2s infinite linear,
+      subtle-shake 0.1s infinite alternate;
+  }
+</style>

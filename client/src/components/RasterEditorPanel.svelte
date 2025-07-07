@@ -132,6 +132,7 @@
     editor.logoX = finalX;
     editor.logoY = finalY;
   }
+
   function handlePanEnd() {
     panState = null;
   }

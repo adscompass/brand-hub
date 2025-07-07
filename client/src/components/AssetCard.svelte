@@ -164,7 +164,6 @@
   {/if}
 
   {#if checked && availableFormats.length > 0}
-    <!-- НОВОЕ UI ДЛЯ ВЫБОРА ФОРМАТА -->
     <div
       class="absolute bottom-4 left-4 z-10 flex gap-0 w-28 h-8 rounded-full border-2 border-white/80 overflow-hidden"
     >
