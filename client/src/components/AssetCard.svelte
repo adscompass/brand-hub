@@ -68,7 +68,7 @@
         >
           {asset.name}
         </figcaption>
-      {:else}
+      {:else if asset.extension === 'svg'}
         <svg
           class="w-full h-full"
           viewBox="0 0 {asset.canvasWidth} {asset.canvasHeight}"
@@ -88,6 +88,16 @@
             />
           </g>
         </svg>
+      {:else if ['png', 'jpg'].includes(asset.extension)}
+        <img
+          src={asset.dataUrl}
+          alt={asset.name || 'Кастомный логотип'}
+          class="w-full h-full object-contain pointer-events-none select-none"
+        />
+      {:else}
+        <div class="text-white/60">
+          Неподдерживаемый формат логотипа: {asset.extension}
+        </div>
       {/if}
     </figure>
 

@@ -171,9 +171,7 @@
 
           const customLogo = customAssets.find((l) => l.id === assetId);
           if (customLogo) {
-            // --- НОВАЯ ЛОГИКА ОБРАБОТКИ СОХРАНЕНИЙ ---
             if (customLogo.extension === 'svg') {
-              // Логика для SVG-ассетов (твоя текущая)
               const baseLogo = assets.logos.find(
                 (l) => l.id === customLogo.originalId,
               );
@@ -189,9 +187,8 @@
                 logoY,
                 logoScale,
                 logoRotate,
-              } = customLogo; // Эти данные приходят из EditorModal
+              } = customLogo;
 
-              // originalSvgDimensions теперь приходит из customLogo
               const originalSvgWidth = customLogo.originalSvgDimensions.width;
               const originalSvgHeight = customLogo.originalSvgDimensions.height;
 
@@ -215,10 +212,8 @@
               const filename = `${customLogo.id}.svg`;
               logosFolder.file(filename, newSvgText.trim());
             } else if (['png', 'jpg'].includes(customLogo.extension)) {
-              // Логика для растровых ассетов (используем dataUrl)
               if (customLogo.dataUrl) {
                 const filename = `${customLogo.id}.${customLogo.extension}`;
-                // JSZip может принимать Base64 напрямую
                 const base64Data = customLogo.dataUrl.split(',')[1];
                 logosFolder.file(filename, base64Data, { base64: true });
               } else {
