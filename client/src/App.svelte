@@ -43,6 +43,53 @@
         ],
       },
     ],
+    typography: [
+      {
+        id: 'heading-1',
+        name: 'H1 - Заголовок',
+        className: 'font-bold text-5xl md:text-6xl leading-tight',
+        properties: {
+          'font-family': 'Arial, sans-serif',
+          'font-size': '48px (md:60px)',
+          'font-weight': '700 (bold)',
+          'line-height': '1.1',
+          'letter-spacing': '-0.02em',
+        },
+      },
+      {
+        id: 'heading-2',
+        name: 'H2 - Подзаголовок',
+        className: 'font-semibold text-4xl md:text-5xl leading-tight',
+        properties: {
+          'font-family': 'Arial, sans-serif',
+          'font-size': '36px (md:48px)',
+          'font-weight': '600 (semibold)',
+          'line-height': '1.2',
+        },
+      },
+      {
+        id: 'body-text',
+        name: 'Body - Основной текст',
+        className: 'font-normal text-base md:text-lg leading-relaxed',
+        properties: {
+          'font-family': 'Verdana, sans-serif',
+          'font-size': '16px (md:18px)',
+          'font-weight': '400 (normal)',
+          'line-height': '1.6',
+        },
+      },
+      {
+        id: 'caption',
+        name: 'Caption - Подпись',
+        className: 'font-light text-xs md:text-sm text-white/70',
+        properties: {
+          'font-family': 'Verdana, sans-serif',
+          'font-size': '12px (md:14px)',
+          'font-weight': '300 (light)',
+          'line-height': '1.4',
+        },
+      },
+    ],
   });
 
   async function getDimensions(logo) {
@@ -106,6 +153,7 @@
   import EditorModal from './components/EditorModal.svelte';
   import AssetCard from './components/AssetCard.svelte';
   import ColorCard from './components/ColorCard.svelte';
+  import TypographyPlayground from './components/TypographyPlayground.svelte';
   import { onMount } from 'svelte';
 
   function extractInnerSvg(svgText) {
@@ -419,6 +467,12 @@
             </div>
           </div>
         {/each}
+      </div>
+    </section>
+    <section class="mb-10">
+      <div class="container flex flex-col gap-8">
+        <h2 class="text-2xl font-semibold">Типографика</h2>
+        <TypographyPlayground styles={assets.typography} />
       </div>
     </section>
   </main>
