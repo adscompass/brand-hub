@@ -184,16 +184,6 @@
           let newFormats = checked
             ? [...item.formats, format]
             : item.formats.filter((f) => f !== format);
-
-          if (newFormats.length === 0) {
-            const asset =
-              assets.logos.find((a) => a.id === id) ||
-              customAssets.find((a) => a.id === id);
-            if (asset) {
-              return { id, formats: [asset.extension] };
-            }
-            return { id, formats: [] };
-          }
           return { id, formats: newFormats };
         }
         return item;

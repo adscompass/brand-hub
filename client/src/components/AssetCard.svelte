@@ -44,6 +44,28 @@
     if (type !== 'custom') return '';
     return `aspect-ratio: ${asset.canvasWidth} / ${asset.canvasHeight};`;
   });
+
+  const formatButtonClasses = $derived((format, index) => {
+    const isChecked = selectedFormats.includes(format);
+    const totalFormats = availableFormats.length;
+
+    let classes = `
+      flex-1 text-center py-1.5 px-3 text-xs font-semibold whitespace-nowrap
+      cursor-pointer transition-colors duration-200
+      ${isChecked ? 'bg-white/90 text-black' : 'bg-black/40 text-white/70 hover:bg-black/60'}
+    `;
+
+    if (totalFormats === 1) {
+      classes += ' rounded-full';
+    } else if (totalFormats === 2) {
+      if (index === 0) {
+        classes += ' rounded-l-full';
+      } else {
+        classes += ' rounded-r-full';
+      }
+    }
+    return classes;
+  });
 </script>
 
 <li
@@ -141,26 +163,27 @@
     </button>
   {/if}
 
-  {#if checked}
-    <div class="absolute bottom-4 left-4 z-10 flex gap-2">
-      {#each availableFormats as format (format)}
-        <div class="flex items-center gap-1">
-          <input
-            type="checkbox"
-            name={`${asset.id}-format-${format}`}
-            id={`${asset.id}-format-${format}`}
-            value={format}
-            checked={selectedFormats.includes(format)}
-            onchange={(e) => handleFormatCheckboxChange(e, format)}
-            class="w-3.5 h-3.5"
-          />
-          <label
-            for={`${asset.id}-format-${format}`}
-            class="text-xs text-white/60"
-          >
-            {format.toUpperCase()}
-          </label>
-        </div>
+  {#if checked && availableFormats.length > 0}
+    <!-- НОВОЕ UI ДЛЯ ВЫБОРА ФОРМАТА -->
+    <div
+      class="absolute bottom-4 left-4 z-10 flex gap-0 w-28 h-8 rounded-full border-2 border-white/80 overflow-hidden"
+    >
+      {#each availableFormats as format, index (format)}
+        <input
+          type="checkbox"
+          name={`${asset.id}-format-${format}`}
+          id={`${asset.id}-format-${format}`}
+          value={format}
+          checked={selectedFormats.includes(format)}
+          onchange={(e) => handleFormatCheckboxChange(e, format)}
+          class="sr-only"
+        />
+        <label
+          for={`${asset.id}-format-${format}`}
+          class={formatButtonClasses(format, index)}
+        >
+          {format.toUpperCase()}
+        </label>
       {/each}
     </div>
   {/if}
