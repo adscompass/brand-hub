@@ -418,33 +418,33 @@
 </script>
 
 <div
-  class="flex flex-col grow min-h-screen bg-[#08090a] text-white"
+  class="flex min-h-screen grow flex-col bg-[#08090a] text-white"
   class:rave-mode={konamiActive}
 >
-  <header class="container flex flex-col items-center pt-10 pb-4 gap-4">
-    <h1 class="text-5xl font-semibold flex flex-col items-center">
+  <header class="container flex flex-col items-center gap-4 pb-4 pt-10">
+    <h1 class="flex flex-col items-center text-5xl font-semibold">
       <span class="text-center">AdsCompass</span>
       <span class="text-center">Руководство по стилю</span>
     </h1>
-    <p class="bg-white/10 px-6 py-1 rounded-2xl">Базовая версия</p>
+    <p class="rounded-2xl bg-white/10 px-6 py-1">Базовая версия</p>
   </header>
 
-  <div class="sticky top-4 z-10 container flex justify-center">
+  <div class="container sticky top-4 z-10 flex justify-center">
     <button
       type="button"
       class="
-		mt-3 px-6 py-3 bg-[#5e6ad2] rounded-lg font-semibold shadow-lg shadow-[#5e6ad2]/20
+		mt-3 rounded-lg bg-[#5e6ad2] px-6 py-3 font-semibold shadow-lg shadow-[#5e6ad2]/20
 		transition-all duration-300 ease-in-out
-		focus:outline-none
-		hover:bg-[#5058b8]
 		hover:-translate-y-px
-		active:bg-[#434a9d]
-		active:translate-y-0
-		active:duration-75
+		hover:bg-[#5058b8]
+		focus:outline-none
 		focus-visible:ring-2
-		focus-visible:ring-offset-2
 		focus-visible:ring-[#5e6ad2]
+		focus-visible:ring-offset-2
 		focus-visible:ring-offset-[#08090a]
+		active:translate-y-0
+		active:bg-[#434a9d]
+		active:duration-75
 	"
       onclick={download}
     >
@@ -459,7 +459,7 @@
       <div class="container flex flex-col gap-3">
         <h2 class="text-2xl font-semibold">Логотипы</h2>
         <ul
-          class="grid grid-cols-[repeat(auto-fill,minmax(288px,1fr))] gap-4 mb-10"
+          class="mb-10 grid grid-cols-[repeat(auto-fill,minmax(288px,1fr))] gap-4"
         >
           {#each assets.logos as logo (logo.id)}
             <AssetCard
@@ -478,7 +478,7 @@
         </ul>
 
         {#if customAssets.length > 0}
-          <h3 class="text-2xl font-semibold mt-8">Ваши вариации</h3>
+          <h3 class="mt-8 text-2xl font-semibold">Ваши вариации</h3>
           <ul
             class="grid grid-cols-[repeat(auto-fill,minmax(288px,1fr))] gap-4"
           >
@@ -501,10 +501,10 @@
           </ul>
         {:else}
           <div
-            class="text-center py-10 px-4 border border-dashed border-white/20 rounded-lg"
+            class="rounded-lg border border-dashed border-white/20 px-4 py-10 text-center"
           >
             <p class="text-white/60">Вы еще не создали ни одной вариации.</p>
-            <p class="text-white/40 text-sm mt-1">
+            <p class="mt-1 text-sm text-white/40">
               Нажмите на иконку кисти на любом логотипе, чтобы начать.
             </p>
           </div>

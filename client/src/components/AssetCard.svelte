@@ -69,7 +69,7 @@
 </script>
 
 <li
-  class="group aspect-[4/3] relative select-none has-[input:focus-visible]:outline-2 has-[input:focus-visible]:outline-offset-2 has-[input:focus-visible]:outline-[#5e6ad2] has-[button:focus-visible]:outline-2 has-[button:focus-visible]:outline-offset-2 has-[button:focus-visible]:outline-[#5e6ad2] overflow-hidden transition-all duration-300 ease-in-out hover:scale-[1.02] active:scale-[0.98] active:duration-75"
+  class="group relative aspect-[4/3] select-none overflow-hidden transition-all duration-300 ease-in-out hover:scale-[1.02] active:scale-[0.98] active:duration-75 has-[button:focus-visible]:outline-2 has-[input:focus-visible]:outline-2 has-[button:focus-visible]:outline-offset-2 has-[input:focus-visible]:outline-offset-2 has-[button:focus-visible]:outline-[#5e6ad2] has-[input:focus-visible]:outline-[#5e6ad2]"
   style="background-color: {baseLogo.background};"
 >
   <input
@@ -82,7 +82,7 @@
   />
   <label
     for={asset.id}
-    class="cursor-pointer w-full h-full flex items-center justify-center p-4"
+    class="flex h-full w-full cursor-pointer items-center justify-center p-4"
   >
     <figure
       class="object-contain"
@@ -103,17 +103,17 @@
         <img
           src={asset.url}
           alt={asset.name}
-          class="pointer-events-none select-none w-full h-full object-contain"
+          class="pointer-events-none h-full w-full select-none object-contain"
         />
         <figcaption
-          class="absolute top-4 left-4 font-semibold opacity-0 pointer-coarse:opacity-100 text-shadow-lg group-hover:opacity-100 transition-opacity duration-300"
+          class="pointer-coarse:opacity-100 text-shadow-lg absolute left-4 top-4 font-semibold opacity-0 transition-opacity duration-300 group-hover:opacity-100"
           style="color: {asset.color}"
         >
           {asset.name}
         </figcaption>
       {:else if asset.extension === 'svg'}
         <svg
-          class="w-full h-full"
+          class="h-full w-full"
           viewBox="0 0 {asset.canvasWidth} {asset.canvasHeight}"
         >
           <g
@@ -135,7 +135,7 @@
         <img
           src={asset.dataUrl}
           alt={asset.name || 'Кастомный логотип'}
-          class="w-full h-full object-contain pointer-events-none select-none"
+          class="pointer-events-none h-full w-full select-none object-contain"
         />
       {:else}
         <div class="text-white/60">
@@ -145,27 +145,15 @@
     </figure>
 
     <span
-      class="absolute top-4 right-4 w-7 h-7 rounded-md border-2 border-white/80 bg-black/20 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 group-has-[input:checked]:opacity-100 group-has-[input:focus-visible]:opacity-100 group-has-[button:focus-visible]:opacity-100"
+      class="absolute right-4 top-4 h-7 w-7 rounded-md border-2 border-white/80 bg-black/20 opacity-0 backdrop-blur-sm transition-all duration-300 group-hover:opacity-100 group-has-[button:focus-visible]:opacity-100 group-has-[input:checked]:opacity-100 group-has-[input:focus-visible]:opacity-100"
     >
       <Icon name="check" />
     </span>
   </label>
 
-  {#if type === 'original'}
-    <button
-      type="button"
-      onclick={onEdit}
-      class="absolute bottom-4 right-4 z-10 p-2 rounded-full bg-black/30 backdrop-blur-sm opacity-0 pointer-coarse:opacity-100 transition-opacity pointer-fine:group-hover:opacity-100 pointer-fine:group-has-[input:focus-visible]:opacity-100 pointer-fine:group-has-[button:focus-visible]:opacity-100"
-      title="Настроить логотип"
-      aria-label="Настроить логотип"
-    >
-      <Icon name="edit" />
-    </button>
-  {/if}
-
   {#if checked && availableFormats.length > 0}
     <div
-      class="absolute bottom-4 left-4 z-10 flex gap-0 w-28 h-8 rounded-full border-2 border-white/80 overflow-hidden"
+      class="absolute bottom-4 left-4 z-10 flex h-8 w-28 gap-0 overflow-hidden rounded-full border-2 border-white/80"
     >
       {#each availableFormats as format, index (format)}
         <input
@@ -185,5 +173,17 @@
         </label>
       {/each}
     </div>
+  {/if}
+
+  {#if type === 'original'}
+    <button
+      type="button"
+      onclick={onEdit}
+      class="pointer-coarse:opacity-100 pointer-fine:group-hover:opacity-100 pointer-fine:group-has-[input:focus-visible]:opacity-100 pointer-fine:group-has-[button:focus-visible]:opacity-100 absolute bottom-4 right-4 z-10 rounded-full bg-black/30 p-2 opacity-0 backdrop-blur-sm transition-opacity"
+      title="Настроить логотип"
+      aria-label="Настроить логотип"
+    >
+      <Icon name="edit" />
+    </button>
   {/if}
 </li>

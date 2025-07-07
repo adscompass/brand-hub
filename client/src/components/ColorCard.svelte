@@ -132,7 +132,7 @@
   ontap={handleTap}
   onswipeleft={() => cycleFormat('next')}
   onswiperight={() => cycleFormat('prev')}
-  class="group relative w-full aspect-square rounded-lg flex flex-col justify-between p-4 text-left transition-all duration-200 border border-white/10 hover:-translate-y-1 active:scale-95 cursor-pointer select-none touch-pan-y"
+  class="group relative flex aspect-square w-full cursor-pointer touch-pan-y select-none flex-col justify-between rounded-lg border border-white/10 p-4 text-left transition-all duration-200 hover:-translate-y-1 active:scale-95"
   class:exploded
   style:background-color={color.hex}
   style:color={textColor}
@@ -141,19 +141,19 @@
   tabindex="0"
 >
   <div class="pointer-events-none">
-    <header class="font-semibold text-lg">{color.name}</header>
+    <header class="text-lg font-semibold">{color.name}</header>
     <footer class="absolute bottom-4 left-4 max-w-[calc(100%-4rem)]">
       <div class="text-xs opacity-70">{FORMATS[currentFormatIndex].label}</div>
-      <div class="font-mono font-semibold truncate">{currentValue}</div>
+      <div class="truncate font-mono font-semibold">{currentValue}</div>
     </footer>
   </div>
 
   <div
-    class="absolute inset-0 hidden pointer-fine:group-hover:flex justify-between items-center px-2"
+    class="pointer-fine:group-hover:flex absolute inset-0 hidden items-center justify-between px-2"
   >
     <button
       type="button"
-      class="p-2 rounded-full bg-black/20 hover:bg-black/40 transition-colors"
+      class="rounded-full bg-black/20 p-2 transition-colors hover:bg-black/40"
       aria-label="Предыдущий формат"
       data-arrow="prev"
     >
@@ -161,7 +161,7 @@
     </button>
     <button
       type="button"
-      class="p-2 rounded-full bg-black/20 hover:bg-black/40 transition-colors"
+      class="rounded-full bg-black/20 p-2 transition-colors hover:bg-black/40"
       aria-label="Следующий формат"
       data-arrow="next"
     >
@@ -169,10 +169,10 @@
     </button>
   </div>
 
-  <div class="absolute bottom-4 right-4 flex gap-1.5 pointer-events-none">
+  <div class="pointer-events-none absolute bottom-4 right-4 flex gap-1.5">
     {#each FORMATS as _, index (index)}
       <div
-        class="w-1.5 h-1.5 rounded-full transition-all {currentFormatIndex ===
+        class="h-1.5 w-1.5 rounded-full transition-all {currentFormatIndex ===
         index
           ? 'bg-current'
           : 'bg-current/30'}"
@@ -182,7 +182,7 @@
 
   {#if copied}
     <div
-      class="absolute inset-0 grid place-items-center bg-black/70 backdrop-blur-sm rounded-lg z-10"
+      class="absolute inset-0 z-10 grid place-items-center rounded-lg bg-black/70 backdrop-blur-sm"
       aria-live="polite"
     >
       <span class="font-bold text-white">Скопировано!</span>
@@ -191,9 +191,9 @@
 
   {#if exploded}
     <div
-      class="absolute inset-0 grid place-items-center bg-red-800/70 backdrop-blur-sm rounded-lg z-30 animation-explode"
+      class="animation-explode absolute inset-0 z-30 grid place-items-center rounded-lg bg-red-800/70 backdrop-blur-sm"
     >
-      <span class="font-bold text-white text-2xl animate-pulse">BOOM!</span>
+      <span class="animate-pulse text-2xl font-bold text-white">BOOM!</span>
     </div>
   {/if}
 </div>

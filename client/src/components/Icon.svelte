@@ -7,7 +7,7 @@
     version="1.1"
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 511.999 511.999"
-    class="p-1 opacity-0 group-has-[input:checked]:opacity-100 transition-all duration-300 scale-50 group-has-[input:checked]:scale-100"
+    class="scale-50 p-1 opacity-0 transition-all duration-300 group-has-[input:checked]:scale-100 group-has-[input:checked]:opacity-100"
   >
     <path
       fill="#FFFFFF"
@@ -18,7 +18,7 @@
 
 {#if name === 'edit'}
   <svg
-    class="w-5 h-5 text-white"
+    class="h-5 w-5 text-white"
     fill="none"
     viewBox="0 0 24 24"
     stroke="currentColor"
@@ -34,7 +34,7 @@
 
 {#if name === 'arrow-right'}
   <svg
-    class="w-5 h-5 text-white"
+    class="h-5 w-5 text-white"
     viewBox="0 0 32 32"
     xmlns="http://www.w3.org/2000/svg"
   >
@@ -48,7 +48,7 @@
 
 {#if name === 'arrow-left'}
   <svg
-    class="w-5 h-5 text-white"
+    class="h-5 w-5 text-white"
     viewBox="0 0 32 32"
     xmlns="http://www.w3.org/2000/svg"
   >
@@ -63,7 +63,7 @@
 {#if name === 'close'}
   <svg
     version="1.1"
-    class="w-5 h-5 text-white"
+    class="h-5 w-5 text-white"
     xmlns="http://www.w3.org/2000/svg"
     xmlns:xlink="http://www.w3.org/1999/xlink"
     x="0px"
