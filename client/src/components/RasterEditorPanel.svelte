@@ -31,9 +31,6 @@
 
     ctx.clearRect(0, 0, editor.canvasWidth, editor.canvasHeight);
 
-    // ctx.fillStyle = logo.background || '#000000';
-    // ctx.fillRect(0, 0, editor.canvasWidth, editor.canvasHeight);
-
     ctx.save();
 
     ctx.translate(editor.logoX, editor.logoY);

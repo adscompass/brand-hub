@@ -25,22 +25,6 @@
         color: '#ffffff',
         extension: 'png',
       },
-      // {
-      //   id: 'goldlead-logo-light',
-      //   name: 'Goldlead светлый логотип',
-      //   url: '/logos/goldlead-logo-light.svg',
-      //   background: '#5e6ad2',
-      //   color: '#ffffff',
-      //   extension: 'svg',
-      // },
-      // {
-      //   id: 'goldlead-logo-dark',
-      //   name: 'Goldlead тёмный логотип',
-      //   url: '/logos/goldlead-logo-dark.svg',
-      //   background: '#f4f2f4',
-      //   color: '#000000',
-      //   extension: 'svg',
-      // },
     ],
     colors: [
       {
@@ -130,106 +114,196 @@
     return match ? match[1].trim() : '';
   }
 
+  async function svgToPng(svgString, width, height) {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
+
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    ctx.scale(dpr, dpr);
+
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        ctx.clearRect(0, 0, width, height);
+        ctx.drawImage(img, 0, 0, width, height);
+        canvas.toBlob((blob) => {
+          resolve(blob);
+        }, 'image/png');
+      };
+      img.onerror = (e) => {
+        console.error('Failed to convert SVG to PNG:', e);
+        resolve(null);
+      };
+      img.src =
+        'data:image/svg+xml;base64,' +
+        btoa(unescape(encodeURIComponent(svgString)));
+    });
+  }
+
   function handleSaveCustomAsset(customAsset) {
     const newAsset = {
       ...customAsset,
       id: `custom-${Date.now()}`,
+      type: 'custom',
     };
     customAssets = [...customAssets, newAsset];
-    selectedAssets = [...selectedAssets, newAsset.id];
+    const defaultFormat =
+      newAsset.extension === 'svg' ? ['svg'] : [newAsset.extension];
+    selectedAssets = [
+      ...selectedAssets,
+      { id: newAsset.id, formats: defaultFormat },
+    ];
+  }
+
+  function handleToggle(detail) {
+    const { id, checked } = detail;
+    const asset =
+      assets.logos.find((a) => a.id === id) ||
+      customAssets.find((a) => a.id === id);
+    if (!asset) return;
+
+    if (checked) {
+      const defaultFormat =
+        asset.extension === 'svg' ? ['svg'] : [asset.extension];
+      selectedAssets = [
+        ...selectedAssets,
+        { id: asset.id, formats: defaultFormat },
+      ];
+    } else {
+      selectedAssets = selectedAssets.filter((item) => item.id !== id);
+    }
+  }
+
+  function handleFormatChange(detail) {
+    const { id, format, checked } = detail;
+    selectedAssets = selectedAssets
+      .map((item) => {
+        if (item.id === id) {
+          let newFormats = checked
+            ? [...item.formats, format]
+            : item.formats.filter((f) => f !== format);
+
+          if (newFormats.length === 0) {
+            const asset =
+              assets.logos.find((a) => a.id === id) ||
+              customAssets.find((a) => a.id === id);
+            if (asset) {
+              return { id, formats: [asset.extension] };
+            }
+            return { id, formats: [] };
+          }
+          return { id, formats: newFormats };
+        }
+        return item;
+      })
+      .filter((item) => item.formats.length > 0);
   }
 
   async function download() {
     const zip = new JSZip();
     const logosFolder = zip.folder('logos');
 
-    let assetsToDownload;
-
+    let finalAssetsToDownload = [];
     if (selectedAssets.length > 0) {
-      assetsToDownload = selectedAssets;
+      finalAssetsToDownload = selectedAssets;
     } else {
-      const allOriginalIds = assets.logos.map((logo) => logo.id);
-      const allCustomIds = customAssets.map((logo) => logo.id);
-      assetsToDownload = [...allOriginalIds, ...allCustomIds];
+      assets.logos.forEach((logo) => {
+        finalAssetsToDownload.push({ id: logo.id, formats: [logo.extension] });
+      });
+      customAssets.forEach((logo) => {
+        finalAssetsToDownload.push({ id: logo.id, formats: [logo.extension] });
+      });
     }
 
-    if (assetsToDownload.length === 0) return;
+    if (finalAssetsToDownload.length === 0) return;
 
     await Promise.all(
-      assetsToDownload.map(async (assetId) => {
-        try {
-          const originalLogo = assets.logos.find((l) => l.id === assetId);
-          if (originalLogo) {
-            const response = await fetch(originalLogo.url);
-            if (!response.ok)
-              throw new Error(`Fetch failed for ${originalLogo.url}`);
-            const fileBlob = await response.blob();
-            const filename = `${originalLogo.id}.${originalLogo.extension}`;
-            logosFolder.file(filename, fileBlob);
-            return;
-          }
+      finalAssetsToDownload.map(async (selectedAssetItem) => {
+        const { id, formats } = selectedAssetItem;
+        const asset =
+          assets.logos.find((a) => a.id === id) ||
+          customAssets.find((a) => a.id === id);
 
-          const customLogo = customAssets.find((l) => l.id === assetId);
-          if (customLogo) {
-            if (customLogo.extension === 'svg') {
-              const baseLogo = assets.logos.find(
-                (l) => l.id === customLogo.originalId,
-              );
-              const response = await fetch(baseLogo.url);
-              const originalSvgText = await response.text();
+        if (!asset) {
+          console.warn(`Asset with ID ${id} not found for download.`);
+          return;
+        }
 
-              const innerSvgContent = extractInnerSvg(originalSvgText);
+        await Promise.all(
+          formats.map(async (format) => {
+            try {
+              let fileBlob = null;
+              let filename = `${asset.id}.${format}`;
 
-              const {
-                canvasWidth,
-                canvasHeight,
-                logoX,
-                logoY,
-                logoScale,
-                logoRotate,
-              } = customLogo;
+              if (asset.extension === 'svg') {
+                let svgContent = null;
 
-              const originalSvgWidth = customLogo.originalSvgDimensions.width;
-              const originalSvgHeight = customLogo.originalSvgDimensions.height;
+                if (asset.type === 'custom') {
+                  const baseLogo = assets.logos.find(
+                    (l) => l.id === asset.originalId,
+                  );
+                  const response = await fetch(baseLogo.url);
+                  const originalInnerSvgText = extractInnerSvg(
+                    await response.text(),
+                  );
 
-              const transform = `translate(${logoX}, ${logoY}) rotate(${logoRotate || 0}) scale(${logoScale}) translate(-${
-                originalSvgWidth / 2
-              }, -${originalSvgHeight / 2})`;
+                  const transform = `translate(${asset.logoX}, ${asset.logoY}) rotate(${asset.logoRotate || 0}) scale(${asset.logoScale}) translate(-${
+                    asset.originalSvgDimensions.width / 2
+                  }, -${asset.originalSvgDimensions.height / 2})`;
 
-              const newSvgText = `
-                <svg 
-                  width="${canvasWidth}" 
-                  height="${canvasHeight}" 
-                  viewBox="0 0 ${canvasWidth} ${canvasHeight}" 
-                  xmlns="http://www.w3.org/2000/svg">
+                  svgContent = `
+                  <svg 
+                    width="${asset.canvasWidth}" 
+                    height="${asset.canvasHeight}" 
+                    viewBox="0 0 ${asset.canvasWidth} ${asset.canvasHeight}" 
+                    xmlns="http://www.w3.org/2000/svg">
+                    <g transform="${transform}">
+                      ${originalInnerSvgText}
+                    </g>
+                  </svg>
+                `;
+                } else {
+                  const response = await fetch(asset.url);
+                  svgContent = await response.text();
+                }
 
-                  <g transform="${transform}">
-                    ${innerSvgContent}
-                  </g>
-                </svg>
-							`;
+                if (format === 'svg') {
+                  fileBlob = new Blob([svgContent], { type: 'image/svg+xml' });
+                } else if (format === 'png') {
+                  fileBlob = await svgToPng(
+                    svgContent,
+                    asset.canvasWidth || asset.width,
+                    asset.canvasHeight || asset.height,
+                  );
+                }
+              } else if (['png', 'jpg'].includes(asset.extension)) {
+                if (format === asset.extension) {
+                  if (asset.type === 'custom' && asset.dataUrl) {
+                    fileBlob = await (await fetch(asset.dataUrl)).blob();
+                  } else {
+                    const response = await fetch(asset.url);
+                    fileBlob = await response.blob();
+                  }
+                }
+              }
 
-              const filename = `${customLogo.id}.svg`;
-              logosFolder.file(filename, newSvgText.trim());
-            } else if (['png', 'jpg'].includes(customLogo.extension)) {
-              if (customLogo.dataUrl) {
-                const filename = `${customLogo.id}.${customLogo.extension}`;
-                const base64Data = customLogo.dataUrl.split(',')[1];
-                logosFolder.file(filename, base64Data, { base64: true });
+              if (fileBlob) {
+                logosFolder.file(filename, fileBlob);
               } else {
                 console.warn(
-                  `Data URL не найден для кастомного ${customLogo.extension} логотипа ${customLogo.id}.`,
+                  `Не удалось подготовить файл для скачивания: ${filename}`,
                 );
               }
-            } else {
-              console.warn(
-                `Неподдерживаемый формат для кастомного логотипа при скачивании: ${customLogo.extension}`,
+            } catch (error) {
+              console.error(
+                `Ошибка при обработке ассета ${id} в формате ${format}:`,
+                error,
               );
             }
-          }
-        } catch (error) {
-          console.error(`Ошибка при обработке ассета ${assetId}:`, error);
-        }
+          }),
+        );
       }),
     );
 
@@ -241,17 +315,6 @@
     link.click();
     link.remove();
     URL.revokeObjectURL(link.href);
-  }
-
-  function handleToggle(detail) {
-    const { id, checked } = detail;
-    if (checked) {
-      if (!selectedAssets.includes(id)) {
-        selectedAssets = [...selectedAssets, id];
-      }
-    } else {
-      selectedAssets = selectedAssets.filter((assetId) => assetId !== id);
-    }
   }
 </script>
 
@@ -301,7 +364,11 @@
               asset={logo}
               baseLogo={logo}
               onToggle={handleToggle}
-              checked={selectedAssets.includes(logo.id)}
+              checked={selectedAssets.some((item) => item.id === logo.id)}
+              onFormatChange={handleFormatChange}
+              selectedFormats={selectedAssets.find(
+                (item) => item.id === logo.id,
+              )?.formats || []}
               type="original"
               onEdit={() => (editingLogo = logo)}
             />
@@ -321,7 +388,11 @@
                 asset={logo}
                 {baseLogo}
                 onToggle={handleToggle}
-                checked={selectedAssets.includes(logo.id)}
+                checked={selectedAssets.some((item) => item.id === logo.id)}
+                onFormatChange={handleFormatChange}
+                selectedFormats={selectedAssets.find(
+                  (item) => item.id === logo.id,
+                )?.formats || []}
                 type="custom"
               />
             {/each}

@@ -8,12 +8,33 @@
     baseLogo,
     onEdit = null,
     onToggle = null,
+    selectedFormats = [],
+    onFormatChange = null,
   } = $props();
+
+  const availableFormats = $derived.by(() => {
+    if (asset.extension === 'svg') {
+      return ['svg', 'png'];
+    } else if (['png', 'jpg'].includes(asset.extension)) {
+      return [asset.extension];
+    }
+    return [];
+  });
 
   function handleChange(event) {
     if (onToggle) {
       onToggle({
         id: asset.id,
+        checked: event.currentTarget.checked,
+      });
+    }
+  }
+
+  function handleFormatCheckboxChange(event, format) {
+    if (onFormatChange) {
+      onFormatChange({
+        id: asset.id,
+        format: format,
         checked: event.currentTarget.checked,
       });
     }
@@ -118,5 +139,29 @@
     >
       <Icon name="edit" />
     </button>
+  {/if}
+
+  {#if checked}
+    <div class="absolute bottom-4 left-4 z-10 flex gap-2">
+      {#each availableFormats as format (format)}
+        <div class="flex items-center gap-1">
+          <input
+            type="checkbox"
+            name={`${asset.id}-format-${format}`}
+            id={`${asset.id}-format-${format}`}
+            value={format}
+            checked={selectedFormats.includes(format)}
+            onchange={(e) => handleFormatCheckboxChange(e, format)}
+            class="w-3.5 h-3.5"
+          />
+          <label
+            for={`${asset.id}-format-${format}`}
+            class="text-xs text-white/60"
+          >
+            {format.toUpperCase()}
+          </label>
+        </div>
+      {/each}
+    </div>
   {/if}
 </li>
