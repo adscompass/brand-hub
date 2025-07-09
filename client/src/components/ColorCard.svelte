@@ -50,7 +50,6 @@
 
   function copyText() {
     if (exploded || copied) return;
-    console.log('Копирование текста:', currentValue);
     const text = currentValue;
     if (navigator.clipboard && window.isSecureContext) {
       navigator.clipboard
