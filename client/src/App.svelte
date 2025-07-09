@@ -481,6 +481,7 @@
           <h3 class="mt-8 text-2xl font-semibold">Ваши вариации</h3>
           <ul
             class="grid grid-cols-[repeat(auto-fill,minmax(288px,1fr))] gap-4"
+            role="listbox"
           >
             {#each customAssets as logo (logo.id)}
               {@const baseLogo = assets.logos.find(
