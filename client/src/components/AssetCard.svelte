@@ -51,7 +51,7 @@
 
     let classes = `
       flex-1 text-center py-1.5 px-3 text-xs font-semibold whitespace-nowrap
-      cursor-pointer transition-colors duration-200
+      cursor-pointer transition-all duration-300
       ${isChecked ? 'bg-white/90 text-black' : 'bg-black/40 text-white/70 hover:bg-black/60'}
     `;
 
@@ -69,7 +69,9 @@
 </script>
 
 <li
-  class="group relative aspect-[4/3] select-none overflow-hidden transition-all duration-300 ease-in-out hover:scale-[1.02] active:scale-[0.98] active:duration-75 has-[button:focus-visible]:outline-2 has-[input:focus-visible]:outline-2 has-[button:focus-visible]:outline-offset-2 has-[input:focus-visible]:outline-offset-2 has-[button:focus-visible]:outline-[#5e6ad2] has-[input:focus-visible]:outline-[#5e6ad2]"
+  class="group relative aspect-[4/3] select-none overflow-hidden outline-offset-2 outline-[#5e6ad2] transition-all
+  duration-300 ease-in-out hover:scale-[1.02]
+  active:scale-[0.98] active:duration-75 has-[:focus-visible]:outline-2"
   style="background-color: {baseLogo.background};"
 >
   <input
@@ -79,6 +81,7 @@
     value={asset.id}
     type="checkbox"
     class="sr-only"
+    data-selected={checked}
   />
   <label
     for={asset.id}
@@ -106,7 +109,9 @@
           class="pointer-events-none h-full w-full select-none object-contain"
         />
         <figcaption
-          class="pointer-coarse:opacity-100 text-shadow-lg absolute left-4 top-4 font-semibold opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+          class="pointer-coarse:opacity-100
+          text-shadow-lg absolute left-4 top-4 font-semibold opacity-0 transition-opacity duration-300
+          group-hover:opacity-100"
           style="color: {asset.color}"
         >
           {asset.name}
@@ -145,7 +150,9 @@
     </figure>
 
     <span
-      class="absolute right-4 top-4 h-7 w-7 rounded-md border-2 border-white/80 bg-black/20 opacity-0 backdrop-blur-sm transition-all duration-300 group-hover:opacity-100 group-has-[button:focus-visible]:opacity-100 group-has-[input:checked]:opacity-100 group-has-[input:focus-visible]:opacity-100"
+      class="absolute right-4 top-4 h-7 w-7 rounded-md border-2 border-white/80 bg-black/20 opacity-0 outline-offset-2
+      backdrop-blur-sm transition-all duration-300 group-hover:opacity-100 group-has-[:focus-visible]:opacity-100
+      group-has-[input:checked]:opacity-100 group-has-[input[data-selected]:focus-visible]:outline-2 group-has-[input[data-selected]:focus-visible]:outline-[#ffffff]"
     >
       <Icon name="check" />
     </span>
@@ -153,24 +160,27 @@
 
   {#if checked && availableFormats.length > 0}
     <div
-      class="absolute bottom-4 left-4 z-10 flex h-8 w-28 gap-0 overflow-hidden rounded-full border-2 border-white/80"
+      class="absolute bottom-4 left-4 z-10 flex h-8 w-28 gap-0 rounded-full border-2 border-white/80"
     >
       {#each availableFormats as format, index (format)}
-        <input
-          type="checkbox"
-          name={`${asset.id}-format-${format}`}
-          id={`${asset.id}-format-${format}`}
-          value={format}
-          checked={selectedFormats.includes(format)}
-          onchange={(e) => handleFormatCheckboxChange(e, format)}
-          class="sr-only"
-        />
-        <label
-          for={`${asset.id}-format-${format}`}
-          class={formatButtonClasses(format, index)}
-        >
-          {format.toUpperCase()}
-        </label>
+        <div class="group/format flex flex-1">
+          <input
+            type="checkbox"
+            name={`${asset.id}-format-${format}`}
+            id={`${asset.id}-format-${format}`}
+            value={format}
+            checked={selectedFormats.includes(format)}
+            onchange={(e) => handleFormatCheckboxChange(e, format)}
+            class="sr-only"
+          />
+          <label
+            for={`${asset.id}-format-${format}`}
+            class="{formatButtonClasses(format, index)}  
+          outline-offset-4 outline-[#ffffff] group-has-[input:focus-visible]/format:outline-2"
+          >
+            {format.toUpperCase()}
+          </label>
+        </div>
       {/each}
     </div>
   {/if}
@@ -179,7 +189,9 @@
     <button
       type="button"
       onclick={onEdit}
-      class="pointer-coarse:opacity-100 pointer-fine:group-hover:opacity-100 pointer-fine:group-has-[input:focus-visible]:opacity-100 pointer-fine:group-has-[button:focus-visible]:opacity-100 absolute bottom-4 right-4 z-10 rounded-full bg-black/30 p-2 opacity-0 backdrop-blur-sm transition-opacity"
+      class="pointer-coarse:opacity-100 pointer-fine:group-hover:opacity-100 pointer-fine:group-has-[:focus-visible]:opacity-100
+      absolute bottom-4 right-4 z-10 rounded-full bg-black/30 p-2 opacity-0 outline-offset-2 outline-[#ffffff] backdrop-blur-sm
+      transition-all duration-300 focus-visible:outline-2"
       title="Настроить логотип"
       aria-label="Настроить логотип"
     >
