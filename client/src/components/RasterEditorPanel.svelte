@@ -7,6 +7,15 @@
   let rotateState = $state(null);
   let resizeState = $state(null);
 
+  const canvasDrawState = $derived({
+    width: editor.canvasWidth,
+    height: editor.canvasHeight,
+    logoX: editor.logoX,
+    logoY: editor.logoY,
+    scale: editor.logoScale,
+    rotate: editor.logoRotate,
+  });
+
   let canvasElement;
   let ctx;
   let rasterImage = null;
@@ -80,14 +89,7 @@
   });
 
   $effect(() => {
-    console.log(
-      editor.canvasWidth,
-      editor.canvasHeight,
-      editor.logoX,
-      editor.logoY,
-      editor.logoScale,
-      editor.logoRotate,
-    );
+    canvasDrawState;
     drawCanvas();
   });
 
