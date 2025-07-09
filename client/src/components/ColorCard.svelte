@@ -171,7 +171,7 @@
   >
     <button
       type="button"
-      class="rounded-full bg-black/20 p-2 transition-colors hover:bg-black/40 focus-visible:outline-2"
+      class="cursor-pointer rounded-full bg-black/20 p-2 transition-colors hover:bg-black/40 focus-visible:outline-2"
       style="outline-color: {textColor};"
       aria-label="Предыдущий формат"
       data-arrow="prev"
@@ -188,7 +188,7 @@
     </button>
     <button
       type="button"
-      class="rounded-full bg-black/20 p-2 transition-colors hover:bg-black/40 focus-visible:outline-2"
+      class="cursor-pointer rounded-full bg-black/20 p-2 transition-colors hover:bg-black/40 focus-visible:outline-2"
       style="outline-color: {textColor};"
       aria-label="Следующий формат"
       data-arrow="next"
