@@ -8,6 +8,7 @@
     xmlns="http://www.w3.org/2000/svg"
     viewBox="0 0 511.999 511.999"
     class="scale-50 p-1 opacity-0 transition-all duration-300 group-has-[input:checked]:scale-100 group-has-[input:checked]:opacity-100"
+    aria-hidden="true"
   >
     <path
       fill="#FFFFFF"
@@ -22,6 +23,7 @@
     fill="none"
     viewBox="0 0 24 24"
     stroke="currentColor"
+    aria-hidden="true"
   >
     <path
       stroke-linecap="round"
@@ -37,6 +39,7 @@
     class="h-5 w-5 text-white"
     viewBox="0 0 32 32"
     xmlns="http://www.w3.org/2000/svg"
+    aria-hidden="true"
   >
     <g id="_x33_-Padlock" fill="white">
       <path
@@ -51,6 +54,7 @@
     class="h-5 w-5 text-white"
     viewBox="0 0 32 32"
     xmlns="http://www.w3.org/2000/svg"
+    aria-hidden="true"
   >
     <g id="_x33_-Padlock" fill="white">
       <path
@@ -71,6 +75,7 @@
     viewBox="0 0 513.552 513.552"
     style="enable-background:new 0 0 513.552 513.552;"
     xml:space="preserve"
+    aria-hidden="true"
     ><g fill="currentColor"
       ><g
         ><path

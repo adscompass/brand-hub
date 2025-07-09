@@ -49,7 +49,8 @@
   });
 
   function copyText() {
-    if (copied) return;
+    if (exploded || copied) return;
+    console.log('Копирование текста:', currentValue);
     const text = currentValue;
     if (navigator.clipboard && window.isSecureContext) {
       navigator.clipboard
@@ -79,6 +80,7 @@
   }
 
   function showCopiedMessage() {
+    if (copied) return;
     copied = true;
     clearTimeout(copyTimeout);
     copyTimeout = setTimeout(() => {
@@ -87,6 +89,7 @@
   }
 
   function cycleFormat(direction) {
+    if (exploded || copied) return;
     const step = direction === 'next' ? 1 : -1;
     const newIndex =
       (currentFormatIndex + step + FORMATS.length) % FORMATS.length;
@@ -94,6 +97,7 @@
   }
 
   function handleTap(event) {
+    if (exploded) return;
     const currentTime = Date.now();
     if (currentTime - lastClickTime < TIME_THRESHOLD) {
       clickCount++;
@@ -104,10 +108,6 @@
 
     if (clickCount >= CLICK_THRESHOLD) {
       exploded = true;
-      console.log(
-        `%cКАРТОЧКА ${color.name} ВЗОРВАЛАСЬ! 💥`,
-        'color: orange; font-size: 18px;',
-      );
       clearTimeout(explodeTimeout);
       explodeTimeout = setTimeout(() => {
         exploded = false;
@@ -115,6 +115,8 @@
       }, 500);
       return;
     }
+
+    if (copied) return;
 
     const trueTarget = event.detail.trueTarget;
     const arrowButton = trueTarget?.closest('[data-arrow]');
@@ -125,6 +127,20 @@
       copyText();
     }
   }
+
+  function handleKeyDown(event) {
+    if (exploded || copied) return;
+    if (['Enter', ' '].includes(event.key)) {
+      event.preventDefault();
+      copyText();
+    } else if (event.key === 'ArrowLeft') {
+      event.preventDefault();
+      cycleFormat('prev');
+    } else if (event.key === 'ArrowRight') {
+      event.preventDefault();
+      cycleFormat('next');
+    }
+  }
 </script>
 
 <div
@@ -132,7 +148,9 @@
   ontap={handleTap}
   onswipeleft={() => cycleFormat('next')}
   onswiperight={() => cycleFormat('prev')}
-  class="group relative flex aspect-square w-full cursor-pointer touch-pan-y select-none flex-col justify-between rounded-lg border border-white/10 p-4 text-left transition-all duration-200 hover:-translate-y-1 active:scale-95"
+  onkeydown={handleKeyDown}
+  class="group relative flex aspect-square w-full cursor-pointer touch-pan-y select-none flex-col justify-between rounded-lg border border-white/10 p-4 text-left outline-offset-2 transition-all
+  duration-300 hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-[#5e6ad2] active:scale-95 active:duration-75"
   class:exploded
   style:background-color={color.hex}
   style:color={textColor}
@@ -149,21 +167,39 @@
   </div>
 
   <div
-    class="pointer-fine:group-hover:flex absolute inset-0 hidden items-center justify-between px-2"
+    class="pointer-fine:group-hover:visible invisible absolute inset-0 flex items-center justify-between px-2 group-focus-within:visible group-focus:visible"
   >
     <button
       type="button"
-      class="rounded-full bg-black/20 p-2 transition-colors hover:bg-black/40"
+      class="rounded-full bg-black/20 p-2 transition-colors hover:bg-black/40 focus-visible:outline-2"
+      style="outline-color: {textColor};"
       aria-label="Предыдущий формат"
       data-arrow="prev"
+      onkeydown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          e.stopPropagation();
+          cycleFormat('prev');
+        }
+      }}
+      tabindex="-1"
     >
       <Icon name="arrow-left" />
     </button>
     <button
       type="button"
-      class="rounded-full bg-black/20 p-2 transition-colors hover:bg-black/40"
+      class="rounded-full bg-black/20 p-2 transition-colors hover:bg-black/40 focus-visible:outline-2"
+      style="outline-color: {textColor};"
       aria-label="Следующий формат"
       data-arrow="next"
+      onkeydown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          e.stopPropagation();
+          cycleFormat('next');
+        }
+      }}
+      tabindex="-1"
     >
       <Icon name="arrow-right" />
     </button>
