@@ -5,6 +5,7 @@
   import ColorCard from './components/ColorCard.svelte';
   import TypographyPlayground from './components/TypographyPlayground.svelte';
   import { onMount, onDestroy } from 'svelte';
+  import GuidelineSlider from './components/GuidelineSlider.svelte';
 
   const konamiCodeSequence = [
     'ArrowUp',
@@ -141,6 +142,24 @@
           'font-weight': '300 (light)',
           'line-height': '1.4',
         },
+      },
+    ],
+    guidelines: [
+      {
+        id: 'backgrounds',
+        title: 'Использование на фонах',
+        description:
+          'Для обеспечения максимальной читаемости и контраста, используйте светлую версию логотипа на темных и цветных фонах, а темную версию — на светлых. Избегайте использования логотипа на сложных, пестрых фонах, которые мешают его восприятию.',
+        imageDo: '/guidelines/backgrounds-do.png',
+        imageDont: '/guidelines/backgrounds-dont.png',
+      },
+      {
+        id: 'stretch',
+        title: 'Не искажайте пропорции',
+        description:
+          'Растягивание или сжатие логотипа нарушает его целостность и узнаваемость. Всегда масштабируйте его пропорционально.',
+        imageDo: '/guidelines/stretch-do.png',
+        imageDont: '/guidelines/stretch-dont.png',
       },
     ],
   });
@@ -533,6 +552,19 @@
       <div class="container flex flex-col gap-8">
         <h2 class="text-2xl font-semibold">Типографика</h2>
         <TypographyPlayground styles={assets.typography} />
+      </div>
+    </section>
+    <section class="mb-10">
+      <div class="container flex flex-col gap-8">
+        <h2 class="text-2xl font-semibold">Правила использования</h2>
+        {#each assets.guidelines as guideline (guideline.id)}
+          <GuidelineSlider
+            title={guideline.title}
+            description={guideline.description}
+            imageDo={guideline.imageDo}
+            imageDont={guideline.imageDont}
+          />
+        {/each}
       </div>
     </section>
   </main>
