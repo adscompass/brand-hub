@@ -2,6 +2,7 @@
   import { gestures } from '../lib/actions/gestures.js';
   import convert from 'color-convert';
   import Icon from './Icon.svelte';
+  import { copyToClipboard } from '../lib/utils/copy.js';
 
   let { color } = $props();
   let copied = $state(false);
@@ -48,34 +49,15 @@
     return luma > 0.5 ? '#000000' : '#FFFFFF';
   });
 
-  function copyText() {
+  async function handleCopy() {
     if (exploded || copied) return;
-    const text = currentValue;
-    if (navigator.clipboard && window.isSecureContext) {
-      navigator.clipboard
-        .writeText(text)
-        .then(showCopiedMessage)
-        .catch(() => fallbackCopy(text));
-    } else {
-      fallbackCopy(text);
-    }
-  }
-
-  function fallbackCopy(text) {
-    const textArea = document.createElement('textarea');
-    textArea.value = text;
-    textArea.style.position = 'fixed';
-    textArea.style.top = '-9999px';
-    textArea.style.left = '-9999px';
-    document.body.appendChild(textArea);
-    textArea.focus();
-    textArea.select();
     try {
-      if (document.execCommand('copy')) showCopiedMessage();
+      await copyToClipboard(currentValue);
+      showCopiedMessage();
     } catch (err) {
-      console.error('Fallback-копирование не удалось', err);
+      console.error('Не удалось скопировать текст цвета:', err);
+      alert('Не удалось скопировать. Пожалуйста, попробуйте вручную.');
     }
-    document.body.removeChild(textArea);
   }
 
   function showCopiedMessage() {
@@ -123,7 +105,7 @@
     if (arrowButton) {
       cycleFormat(arrowButton.dataset.arrow);
     } else {
-      copyText();
+      handleCopy();
     }
   }
 
@@ -131,7 +113,7 @@
     if (exploded || copied) return;
     if (['Enter', ' '].includes(event.key)) {
       event.preventDefault();
-      copyText();
+      handleCopy();
     } else if (event.key === 'ArrowLeft') {
       event.preventDefault();
       cycleFormat('prev');
