@@ -44,9 +44,8 @@
       <h3 class="text-lg font-semibold text-white/80">{style.name}</h3>
       <div class="rounded-md bg-black/20 py-4 sm:px-4">
         <p
-          class="{style.className} {style.font === 'main'
-            ? 'font-main'
-            : 'font-accident'}"
+          class={style.className}
+          style="font-family: {style.properties['font-family'].css}"
         >
           {inputText || 'Пустой текст для предпросмотра.'}
         </p>
@@ -89,18 +88,4 @@
 
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Montserrat:wght@600;700&display=swap');
-  :global(:root) {
-    --font-family-main:
-      'Inter', 'SF Pro Text', 'Helvetica Neue', 'Helvetica', 'Roboto', 'Arial',
-      sans-serif;
-    --font-family-accident: 'Montserrat', 'DejaVu Sans', Verdana, sans-serif;
-  }
-
-  :global(.font-main) {
-    font-family: var(--font-family-main);
-  }
-
-  :global(.font-accident) {
-    font-family: var(--font-family-accident);
-  }
 </style>

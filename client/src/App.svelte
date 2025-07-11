@@ -103,11 +103,10 @@
         name: 'H1 - Заголовок',
         className:
           'text-5xl md:text-6xl font-bold leading-tight tracking-tighter',
-        font: 'accident',
         properties: {
           'font-family': {
-            css: 'var(--font-family-accident)',
-            display: '"Montserrat", sans-serif',
+            css: 'Montserrat',
+            display: 'Montserrat',
           },
           'font-size': { css: '3rem', display: '3rem (48px)' },
           'font-weight': { css: '700', display: '700 (Bold)' },
@@ -120,11 +119,10 @@
         name: 'H2 - Подзаголовок',
         className:
           'text-4xl md:text-5xl font-semibold leading-tight tracking-tight',
-        font: 'accident',
         properties: {
           'font-family': {
-            css: 'var(--font-family-accident)',
-            display: '"Montserrat", sans-serif',
+            css: 'Montserrat',
+            display: 'Montserrat',
           },
           'font-size': { css: '2.25rem', display: '2.25rem (36px)' },
           'font-weight': { css: '600', display: '600 (Semibold)' },
@@ -135,11 +133,10 @@
         id: 'body-text',
         name: 'Body - Основной текст',
         className: 'text-base md:text-lg font-normal leading-relaxed',
-        font: 'main',
         properties: {
           'font-family': {
-            css: 'var(--font-family-main)',
-            display: '"Inter", sans-serif',
+            css: 'Inter',
+            display: 'Inter',
           },
           'font-size': { css: '1rem', display: '1rem (16px)' },
           'font-weight': { css: '400', display: '400 (Normal)' },
@@ -153,8 +150,8 @@
         font: 'main',
         properties: {
           'font-family': {
-            css: 'var(--font-family-main)',
-            display: '"Inter", sans-serif',
+            css: 'Inter',
+            display: 'Inter',
           },
           'font-size': { css: '0.75rem', display: '0.75rem (12px)' },
           'font-weight': { css: '300', display: '300 (Light)' },
