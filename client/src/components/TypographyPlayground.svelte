@@ -42,7 +42,9 @@
   {#each styles as style (style.id)}
     <div class="flex flex-col gap-4 rounded-lg bg-white/5 p-6 shadow-inner">
       <h3 class="text-lg font-semibold text-white/80">{style.name}</h3>
-      <div class="rounded-md bg-black/20 py-4 sm:px-4">
+      <div
+        class="max-w-full overflow-hidden rounded-md bg-black/20 py-4 sm:px-4"
+      >
         <p
           class={style.className}
           style="font-family: {style.properties['font-family'].css}"
