@@ -6,6 +6,7 @@
   import TypographyPlayground from './components/TypographyPlayground.svelte';
   import { onMount, onDestroy } from 'svelte';
   import GuidelineSlider from './components/GuidelineSlider.svelte';
+  import VideoAssetCard from './components/VideoAssetCard.svelte';
 
   const konamiCodeSequence = [
     'ArrowUp',
@@ -175,6 +176,58 @@
           'Растягивание или сжатие логотипа нарушает его целостность и узнаваемость. Всегда масштабируйте его пропорционально.',
         imageDo: '/guidelines/stretch-do.png',
         imageDont: '/guidelines/stretch-dont.png',
+      },
+    ],
+    videos: [
+      {
+        id: 'sample-video',
+        title: 'Тестовый образец',
+        thumbnailUrl: '/videos/sample-video-thumbnail.png',
+        formats: [
+          {
+            name: 'Горизонтальное (16:9)',
+            ratio: '16x9',
+            resolution: '1080×566',
+            url: '/videos/sample-video-16x9.mp4',
+          },
+          {
+            name: 'Stories (9:16)',
+            ratio: '9x16',
+            resolution: '1080×1920',
+            url: '/videos/sample-video-9x16.mp4',
+          },
+          {
+            name: 'Квадрат (1:1)',
+            ratio: '1x1',
+            resolution: '1080×1080',
+            url: '/videos/sample-video-1x1.mp4',
+          },
+          {
+            name: 'Портретное (4:5)',
+            ratio: '4x5',
+            resolution: '1080×1350',
+            url: '/videos/sample-video-4x5.mp4',
+          },
+        ],
+      },
+      {
+        id: 'sample-video-2',
+        title: 'Тестовый образец',
+        thumbnailUrl: '/videos/sample-video-2-thumbnail.png',
+        formats: [
+          {
+            name: 'Горизонтальное (16:9)',
+            ratio: '16x9',
+            resolution: '1080×566',
+            url: '/videos/sample-video-2-16x9.mp4',
+          },
+          {
+            name: 'Портретное (4:5)',
+            ratio: '4x5',
+            resolution: '1080×1350',
+            url: '/videos/sample-video-2-4x5.mp4',
+          },
+        ],
       },
     ],
   });
@@ -580,6 +633,16 @@
             imageDont={guideline.imageDont}
           />
         {/each}
+      </div>
+    </section>
+    <section class="mb-10">
+      <div class="container flex flex-col gap-8">
+        <h2 class="text-2xl font-semibold">Видео-материалы</h2>
+        <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+          {#each assets.videos as video (video.id)}
+            <VideoAssetCard {video} />
+          {/each}
+        </div>
       </div>
     </section>
   </main>
