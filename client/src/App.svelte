@@ -72,7 +72,7 @@
         extension: 'svg',
       },
       {
-        id: 'random-test',
+        id: 'adscompass-logo-red',
         name: 'Adscompass красный логотип',
         url: '/logos/adscompass-logo-red.png',
         background: '#f4f2f4',
