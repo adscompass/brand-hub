@@ -73,9 +73,9 @@
       },
       {
         id: 'random-test',
-        name: 'Тестовый логотип',
-        url: '/logos/random-test.jpg',
-        background: '#5e6ad2',
+        name: 'Adscompass красный логотип',
+        url: '/logos/adscompass-logo-red.png',
+        background: '#f4f2f4',
         color: '#ffffff',
         extension: 'png',
       },
