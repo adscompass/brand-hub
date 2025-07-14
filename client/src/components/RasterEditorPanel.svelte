@@ -152,42 +152,47 @@
 
   function handleResize(event, edge) {
     if (!resizeState) return;
+
     const dx = event.detail.x - resizeState.initialPointerX;
     const dy = event.detail.y - resizeState.initialPointerY;
 
     let newWidth = resizeState.initialCanvasWidth;
     let newHeight = resizeState.initialCanvasHeight;
+    let logoDeltaX = 0;
+    let logoDeltaY = 0;
 
     switch (edge) {
       case 'right':
-        newWidth = resizeState.initialCanvasWidth + dx;
+      case 'left': {
+        const widthChange = (edge === 'right' ? dx : -dx) * 2;
+        newWidth = resizeState.initialCanvasWidth + widthChange;
         if (editor.keepAspectRatio && originalRasterAspectRatio > 0) {
           newHeight = newWidth / originalRasterAspectRatio;
         }
-        break;
-      case 'left':
-        newWidth = resizeState.initialCanvasWidth - dx;
-        if (editor.keepAspectRatio && originalRasterAspectRatio > 0) {
-          newHeight = newWidth / originalRasterAspectRatio;
+        if (edge === 'left') {
+          logoDeltaX = -dx * 2;
         }
-        editor.logoX = resizeState.initialLogoX - dx;
         break;
+      }
+
       case 'bottom':
-        newHeight = resizeState.initialCanvasHeight + dy;
+      case 'top': {
+        const heightChange = (edge === 'bottom' ? dy : -dy) * 2;
+        newHeight = resizeState.initialCanvasHeight + heightChange;
         if (editor.keepAspectRatio && originalRasterAspectRatio > 0) {
           newWidth = newHeight * originalRasterAspectRatio;
         }
-        break;
-      case 'top':
-        newHeight = resizeState.initialCanvasHeight - dy;
-        if (editor.keepAspectRatio && originalRasterAspectRatio > 0) {
-          newWidth = newHeight * originalRasterAspectRatio;
+        if (edge === 'top') {
+          logoDeltaY = -dy * 2;
         }
-        editor.logoY = resizeState.initialLogoY - dy;
         break;
+      }
     }
+
     editor.canvasWidth = Math.max(50, newWidth);
     editor.canvasHeight = Math.max(50, newHeight);
+    editor.logoX = resizeState.initialLogoX + logoDeltaX;
+    editor.logoY = resizeState.initialLogoY + logoDeltaY;
   }
 
   function handleResizeEnd() {
