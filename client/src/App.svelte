@@ -7,6 +7,8 @@
   import { onMount, onDestroy } from 'svelte';
   import GuidelineSlider from './components/GuidelineSlider.svelte';
   import VideoAssetCard from './components/VideoAssetCard.svelte';
+  import PatternGenerator from './components/PatternGenerator.svelte';
+  import PatternCard from './components/PatternCard.svelte';
 
   const konamiCodeSequence = [
     'ArrowUp',
@@ -230,6 +232,13 @@
         ],
       },
     ],
+    patterns: [
+      {
+        id: 'diamond-grid',
+        name: 'Ромбовидная сетка',
+        url: '/patterns/diamond-grid.svg',
+      },
+    ],
   });
 
   async function getDimensions(logo) {
@@ -297,6 +306,7 @@
 
   let selectedAssets = $state([]);
   let customAssets = $state([]);
+  let customPatterns = $state([]);
   let editingLogo = $state(null);
 
   function extractInnerSvg(svgText) {
@@ -349,23 +359,80 @@
       newAsset.extension === 'svg' ? ['svg'] : [newAsset.extension];
     selectedAssets = [
       ...selectedAssets,
-      { id: newAsset.id, formats: defaultFormat },
+      { id: newAsset.id, formats: defaultFormat, assetType: 'logo' },
     ];
   }
 
+  async function handleSaveCustomPattern(patternData) {
+    try {
+      const response = await fetch(patternData.basePatternUrl);
+      if (!response.ok) throw new Error('Не удалось загрузить шаблон паттерна');
+      const svgTemplateText = await response.text();
+
+      const innerSvgContent = extractInnerSvg(svgTemplateText);
+      const coloredInnerSvg = innerSvgContent.replace(
+        /currentColor/g,
+        patternData.patternColor,
+      );
+
+      const viewBoxMatch = svgTemplateText.match(
+        /viewBox="0 0 ([\d.]+) ([\d.]+)"/,
+      );
+      const patternWidth = viewBoxMatch ? viewBoxMatch[1] : '50';
+      const patternHeight = viewBoxMatch ? viewBoxMatch[2] : '50';
+
+      const finalSvg = `
+        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="p" width="${patternWidth}" height="${patternHeight}" patternUnits="userSpaceOnUse">
+              ${coloredInnerSvg}
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="${patternData.backgroundColor}"/>
+          <rect width="100%" height="100%" fill="url(#p)"/>
+        </svg>`.trim();
+
+      const dataUrl =
+        'data:image/svg+xml;base64,' +
+        btoa(unescape(encodeURIComponent(finalSvg)));
+
+      const newPattern = {
+        ...patternData,
+        id: `pattern-${patternData.baseId}-${Date.now()}`,
+        type: 'custom',
+        dataUrl: dataUrl,
+      };
+
+      customPatterns = [...customPatterns, newPattern];
+      selectedAssets = [
+        ...selectedAssets,
+        { id: newPattern.id, formats: ['svg'], assetType: 'pattern' },
+      ];
+    } catch (error) {
+      console.error('Ошибка при создании кастомного паттерна:', error);
+    }
+  }
+
   function handleToggle(detail) {
-    const { id, checked } = detail;
+    const { id, checked, assetType } = detail;
     const asset =
       assets.logos.find((a) => a.id === id) ||
-      customAssets.find((a) => a.id === id);
+      customAssets.find((a) => a.id === id) ||
+      customPatterns.find((a) => a.id === id);
     if (!asset) return;
 
     if (checked) {
-      const defaultFormat =
-        asset.extension === 'svg' ? ['svg'] : [asset.extension];
+      let defaultFormats = [];
+      if (assetType === 'logo') {
+        defaultFormats =
+          asset.extension === 'svg' ? ['svg'] : [asset.extension];
+      } else if (assetType === 'pattern') {
+        defaultFormats = ['svg'];
+      }
+
       selectedAssets = [
         ...selectedAssets,
-        { id: asset.id, formats: defaultFormat },
+        { id, formats: defaultFormats, assetType },
       ];
     } else {
       selectedAssets = selectedAssets.filter((item) => item.id !== id);
@@ -377,10 +444,10 @@
     selectedAssets = selectedAssets
       .map((item) => {
         if (item.id === id) {
-          let newFormats = checked
+          const newFormats = checked
             ? [...item.formats, format]
             : item.formats.filter((f) => f !== format);
-          return { id, formats: newFormats };
+          return { ...item, formats: newFormats };
         }
         return item;
       })
@@ -390,16 +457,32 @@
   async function download() {
     const zip = new JSZip();
     const logosFolder = zip.folder('logos');
+    const patternsFolder = zip.folder('patterns');
 
     let finalAssetsToDownload = [];
     if (selectedAssets.length > 0) {
       finalAssetsToDownload = selectedAssets;
     } else {
       assets.logos.forEach((logo) => {
-        finalAssetsToDownload.push({ id: logo.id, formats: [logo.extension] });
+        finalAssetsToDownload.push({
+          id: logo.id,
+          formats: [logo.extension],
+          assetType: 'logo',
+        });
       });
       customAssets.forEach((logo) => {
-        finalAssetsToDownload.push({ id: logo.id, formats: [logo.extension] });
+        finalAssetsToDownload.push({
+          id: logo.id,
+          formats: [logo.extension],
+          assetType: 'logo',
+        });
+      });
+      customPatterns.forEach((pattern) => {
+        finalAssetsToDownload.push({
+          id: pattern.id,
+          formats: ['svg'],
+          assetType: 'pattern',
+        });
       });
     }
 
@@ -407,39 +490,40 @@
 
     await Promise.all(
       finalAssetsToDownload.map(async (selectedAssetItem) => {
-        const { id, formats } = selectedAssetItem;
-        const asset =
-          assets.logos.find((a) => a.id === id) ||
-          customAssets.find((a) => a.id === id);
+        const { id, formats, assetType } = selectedAssetItem;
+        if (assetType === 'logo') {
+          const asset =
+            assets.logos.find((a) => a.id === id) ||
+            customAssets.find((a) => a.id === id);
 
-        if (!asset) {
-          console.warn(`Asset with ID ${id} not found for download.`);
-          return;
-        }
+          if (!asset) {
+            console.warn(`Asset with ID ${id} not found for download.`);
+            return;
+          }
 
-        await Promise.all(
-          formats.map(async (format) => {
-            try {
-              let fileBlob = null;
-              let filename = `${asset.id}.${format}`;
+          await Promise.all(
+            formats.map(async (format) => {
+              try {
+                let fileBlob = null;
+                let filename = `${asset.id}.${format}`;
 
-              if (asset.extension === 'svg') {
-                let svgContent = null;
+                if (asset.extension === 'svg') {
+                  let svgContent = null;
 
-                if (asset.type === 'custom') {
-                  const baseLogo = assets.logos.find(
-                    (l) => l.id === asset.originalId,
-                  );
-                  const response = await fetch(baseLogo.url);
-                  const originalInnerSvgText = extractInnerSvg(
-                    await response.text(),
-                  );
+                  if (asset.type === 'custom') {
+                    const baseLogo = assets.logos.find(
+                      (l) => l.id === asset.originalId,
+                    );
+                    const response = await fetch(baseLogo.url);
+                    const originalInnerSvgText = extractInnerSvg(
+                      await response.text(),
+                    );
 
-                  const transform = `translate(${asset.logoX}, ${asset.logoY}) rotate(${asset.logoRotate || 0}) scale(${asset.logoScale}) translate(-${
-                    asset.originalSvgDimensions.width / 2
-                  }, -${asset.originalSvgDimensions.height / 2})`;
+                    const transform = `translate(${asset.logoX}, ${asset.logoY}) rotate(${asset.logoRotate || 0}) scale(${asset.logoScale}) translate(-${
+                      asset.originalSvgDimensions.width / 2
+                    }, -${asset.originalSvgDimensions.height / 2})`;
 
-                  svgContent = `
+                    svgContent = `
                   <svg 
                     width="${asset.canvasWidth}" 
                     height="${asset.canvasHeight}" 
@@ -450,46 +534,87 @@
                     </g>
                   </svg>
                 `;
-                } else {
-                  const response = await fetch(asset.url);
-                  svgContent = await response.text();
-                }
-
-                if (format === 'svg') {
-                  fileBlob = new Blob([svgContent], { type: 'image/svg+xml' });
-                } else if (format === 'png') {
-                  fileBlob = await svgToPng(
-                    svgContent,
-                    asset.canvasWidth || asset.width,
-                    asset.canvasHeight || asset.height,
-                  );
-                }
-              } else if (['png', 'jpg'].includes(asset.extension)) {
-                if (format === asset.extension) {
-                  if (asset.type === 'custom' && asset.dataUrl) {
-                    fileBlob = await (await fetch(asset.dataUrl)).blob();
                   } else {
                     const response = await fetch(asset.url);
-                    fileBlob = await response.blob();
+                    svgContent = await response.text();
+                  }
+
+                  if (format === 'svg') {
+                    fileBlob = new Blob([svgContent], {
+                      type: 'image/svg+xml',
+                    });
+                  } else if (format === 'png') {
+                    fileBlob = await svgToPng(
+                      svgContent,
+                      asset.canvasWidth || asset.width,
+                      asset.canvasHeight || asset.height,
+                    );
+                  }
+                } else if (['png', 'jpg'].includes(asset.extension)) {
+                  if (format === asset.extension) {
+                    if (asset.type === 'custom' && asset.dataUrl) {
+                      fileBlob = await (await fetch(asset.dataUrl)).blob();
+                    } else {
+                      const response = await fetch(asset.url);
+                      fileBlob = await response.blob();
+                    }
                   }
                 }
-              }
 
-              if (fileBlob) {
-                logosFolder.file(filename, fileBlob);
-              } else {
-                console.warn(
-                  `Не удалось подготовить файл для скачивания: ${filename}`,
+                if (fileBlob) {
+                  logosFolder.file(filename, fileBlob);
+                } else {
+                  console.warn(
+                    `Не удалось подготовить файл для скачивания: ${filename}`,
+                  );
+                }
+              } catch (error) {
+                console.error(
+                  `Ошибка при обработке ассета ${id} в формате ${format}:`,
+                  error,
                 );
               }
-            } catch (error) {
-              console.error(
-                `Ошибка при обработке ассета ${id} в формате ${format}:`,
-                error,
-              );
-            }
-          }),
-        );
+            }),
+          );
+        } else if (assetType === 'pattern') {
+          const pattern = customPatterns.find((p) => p.id === id);
+          if (!pattern) return;
+          try {
+            const response = await fetch(pattern.basePatternUrl);
+            const svgTemplateText = await response.text();
+
+            const innerSvgContent = extractInnerSvg(svgTemplateText);
+
+            const coloredInnerSvg = innerSvgContent.replace(
+              /currentColor/g,
+              pattern.patternColor,
+            );
+
+            const viewBoxMatch = svgTemplateText.match(
+              /viewBox="0 0 ([\d.]+) ([\d.]+)"/,
+            );
+            const patternWidth = viewBoxMatch ? viewBoxMatch[1] : '50';
+            const patternHeight = viewBoxMatch ? viewBoxMatch[2] : '50';
+
+            const finalSvg = `
+              <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <pattern id="p" width="${patternWidth}" height="${patternHeight}" patternUnits="userSpaceOnUse">
+                    ${coloredInnerSvg}
+                  </pattern>
+                </defs>
+                <rect width="100%" height="100%" fill="${pattern.backgroundColor}"/>
+                <rect width="100%" height="100%" fill="url(#p)"/>
+              </svg>`;
+
+            patternsFolder.file(`${pattern.id}.svg`, finalSvg.trim());
+          } catch (error) {
+            console.error(
+              `Ошибка при обработке паттерна ${pattern.id}:`,
+              error,
+            );
+          }
+        }
       }),
     );
 
@@ -643,6 +768,31 @@
             <VideoAssetCard {video} />
           {/each}
         </div>
+      </div>
+    </section>
+    <section class="mb-10">
+      <div class="container flex flex-col gap-8">
+        <h2 class="text-2xl font-semibold">Генератор Паттернов</h2>
+        <PatternGenerator
+          patterns={assets.patterns}
+          brandColors={assets.colors}
+          onSave={handleSaveCustomPattern}
+        />
+        {#if customPatterns.length > 0}
+          <h3 class="mt-4 text-xl font-semibold">Ваши паттерны:</h3>
+          <ul
+            class="grid grid-cols-[repeat(auto-fill,minmax(288px,1fr))] gap-4"
+          >
+            {#each customPatterns as pattern (pattern.id)}
+              <PatternCard
+                {pattern}
+                onToggle={(detail) =>
+                  handleToggle({ ...detail, assetType: 'pattern' })}
+                checked={selectedAssets.some((item) => item.id === pattern.id)}
+              />
+            {/each}
+          </ul>
+        {/if}
       </div>
     </section>
   </main>

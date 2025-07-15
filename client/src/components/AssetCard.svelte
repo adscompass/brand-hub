@@ -28,6 +28,7 @@
       onToggle({
         id: asset.id,
         checked: event.currentTarget.checked,
+        assetType: 'logo',
       });
     }
   }
