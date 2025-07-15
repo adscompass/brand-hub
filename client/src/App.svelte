@@ -415,6 +415,7 @@
 
   function handleToggle(detail) {
     const { id, checked, assetType } = detail;
+    if (assetType === 'video') return;
     const asset =
       assets.logos.find((a) => a.id === id) ||
       customAssets.find((a) => a.id === id) ||
@@ -454,10 +455,54 @@
       .filter((item) => item.formats.length > 0);
   }
 
+  function handleVideoFormatChange(detail) {
+    const { id, format, checked } = detail;
+
+    const entryIndex = selectedAssets.findIndex(
+      (item) => item.id === id && item.assetType === 'video',
+    );
+
+    if (checked) {
+      if (entryIndex > -1) {
+        selectedAssets = selectedAssets.map((item, index) => {
+          if (index === entryIndex) {
+            return { ...item, formats: [...item.formats, format] };
+          }
+          return item;
+        });
+      } else {
+        selectedAssets = [
+          ...selectedAssets,
+          { id, formats: [format], assetType: 'video' },
+        ];
+      }
+    } else {
+      if (entryIndex > -1) {
+        const newFormats = selectedAssets[entryIndex].formats.filter(
+          (f) => f !== format,
+        );
+
+        if (newFormats.length > 0) {
+          selectedAssets = selectedAssets.map((item, index) => {
+            if (index === entryIndex) {
+              return { ...item, formats: newFormats };
+            }
+            return item;
+          });
+        } else {
+          selectedAssets = selectedAssets.filter(
+            (_, index) => index !== entryIndex,
+          );
+        }
+      }
+    }
+  }
+
   async function download() {
     const zip = new JSZip();
     const logosFolder = zip.folder('logos');
     const patternsFolder = zip.folder('patterns');
+    const videosFolder = zip.folder('videos');
 
     let finalAssetsToDownload = [];
     if (selectedAssets.length > 0) {
@@ -614,6 +659,34 @@
               error,
             );
           }
+        } else if (assetType === 'video') {
+          const videoAsset = assets.videos.find((v) => v.id === id);
+          if (!videoAsset) return;
+
+          await Promise.all(
+            formats.map(async (ratio) => {
+              const formatInfo = videoAsset.formats.find(
+                (f) => f.ratio === ratio,
+              );
+              if (!formatInfo) return;
+
+              try {
+                const response = await fetch(formatInfo.url);
+                if (!response.ok)
+                  throw new Error(
+                    `Ошибка сети при скачивании видео: ${formatInfo.url}`,
+                  );
+                const blob = await response.blob();
+                const filename = `${videoAsset.id}-${formatInfo.ratio}.mp4`;
+                videosFolder.file(filename, blob);
+              } catch (error) {
+                console.error(
+                  `Ошибка при обработке видео ${id} в формате ${ratio}:`,
+                  error,
+                );
+              }
+            }),
+          );
         }
       }),
     );
@@ -765,7 +838,14 @@
         <h2 class="text-2xl font-semibold">Видео-материалы</h2>
         <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
           {#each assets.videos as video (video.id)}
-            <VideoAssetCard {video} />
+            {@const selectedVideoEntry = selectedAssets.find(
+              (item) => item.id === video.id && item.assetType === 'video',
+            )}
+            <VideoAssetCard
+              {video}
+              selectedFormats={selectedVideoEntry?.formats || []}
+              onToggle={handleVideoFormatChange}
+            />
           {/each}
         </div>
       </div>
