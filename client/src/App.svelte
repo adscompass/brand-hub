@@ -511,7 +511,7 @@
       assets.logos.forEach((logo) => {
         finalAssetsToDownload.push({
           id: logo.id,
-          formats: [logo.extension],
+          formats: [logo.extension, 'png'],
           assetType: 'logo',
         });
       });
@@ -527,6 +527,13 @@
           id: pattern.id,
           formats: ['svg'],
           assetType: 'pattern',
+        });
+      });
+      assets.videos.forEach((video) => {
+        finalAssetsToDownload.push({
+          id: video.id,
+          formats: video.formats.map((f) => f.ratio),
+          assetType: 'video',
         });
       });
     }
