@@ -9,3 +9,48 @@
 .modal-open {
   overflow: hidden;
 }
+
+@theme {
+  --animate-rainbow-flicker: rainbow-flicker 2s linear infinite;
+
+  @keyframes rainbow-flicker {
+    0% {
+      filter: hue-rotate(0deg) saturate(1);
+    }
+    25% {
+      filter: hue-rotate(90deg) saturate(1.5);
+    }
+    50% {
+      filter: hue-rotate(180deg) saturate(1);
+    }
+    75% {
+      filter: hue-rotate(270deg) saturate(1.5);
+    }
+    100% {
+      filter: hue-rotate(360deg) saturate(1);
+    }
+  }
+
+  --animate-subtle-shake: subtle-shake 0.1s infinite alternate;
+
+  @keyframes subtle-shake {
+    0% {
+      transform: translate(0, 0);
+    }
+    25% {
+      transform: translate(10px, -10px);
+    }
+    50% {
+      transform: translate(-10px, 10px);
+    }
+    75% {
+      transform: translate(10px, 10px);
+    }
+    100% {
+      transform: translate(0, 0);
+    }
+  }
+
+  --animate-rave:
+    rainbow-flicker 2s linear infinite, subtle-shake 0.1s infinite alternate;
+}

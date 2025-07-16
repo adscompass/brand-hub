@@ -422,7 +422,7 @@
 
 <div
   class="flex min-h-screen grow flex-col bg-[#08090a] text-white"
-  class:rave-mode={konamiActive}
+  class:animate-rave={konamiActive}
   use:konami={activateRaveMode}
 >
   <header class="container flex flex-col items-center gap-4 pb-4 pt-10">
@@ -604,47 +604,3 @@
     onClose={() => (editingLogo = null)}
   />
 {/if}
-
-<style>
-  @keyframes rainbow-flicker {
-    0% {
-      filter: hue-rotate(0deg) saturate(1);
-    }
-    25% {
-      filter: hue-rotate(90deg) saturate(1.5);
-    }
-    50% {
-      filter: hue-rotate(180deg) saturate(1);
-    }
-    75% {
-      filter: hue-rotate(270deg) saturate(1.5);
-    }
-    100% {
-      filter: hue-rotate(360deg) saturate(1);
-    }
-  }
-
-  @keyframes subtle-shake {
-    0% {
-      transform: translate(0, 0);
-    }
-    25% {
-      transform: translate(10px, -10px);
-    }
-    50% {
-      transform: translate(-10px, 10px);
-    }
-    75% {
-      transform: translate(10px, 10px);
-    }
-    100% {
-      transform: translate(0, 0);
-    }
-  }
-
-  .rave-mode {
-    animation:
-      rainbow-flicker 2s infinite linear,
-      subtle-shake 0.1s infinite alternate;
-  }
-</style>
