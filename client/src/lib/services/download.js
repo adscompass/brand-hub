@@ -1,5 +1,6 @@
 import JSZip from 'jszip';
 import { extractInnerSvg, svgToPng } from '../utils/assetProcessor';
+import convert from 'color-convert';
 
 export async function createAndDownloadZip({
   selectedAssets,
@@ -11,6 +12,24 @@ export async function createAndDownloadZip({
   const logosFolder = zip.folder('logos');
   const patternsFolder = zip.folder('patterns');
   const videosFolder = zip.folder('videos');
+  const palettesFolder = zip.folder('palettes');
+
+  let txtContent = 'Фирменные цвета AdsCompass\n\n';
+  allAssets.colors.forEach((group) => {
+    txtContent += `--- ${group.groupName} ---\n`;
+    group.items.forEach((color) => {
+      const hex = color.hex.toUpperCase();
+      const rgb = convert.hex.rgb(hex.replace('#', '')).join(', ');
+      const cmyk = convert.hex.cmyk(hex.replace('#', '')).join('%, ') + '%';
+      const hsl = convert.hex.hsl(hex.replace('#', '')).join(', ');
+      txtContent += `${color.name || hex}:\n`;
+      txtContent += `  HEX: ${hex}\n`;
+      txtContent += `  RGB: ${rgb}\n`;
+      txtContent += `  CMYK: ${cmyk}\n`;
+      txtContent += `  HSL: ${hsl}\n\n`;
+    });
+  });
+  palettesFolder.file('palette.txt', txtContent);
 
   let finalAssetsToDownload = [];
   if (selectedAssets.length > 0) {
