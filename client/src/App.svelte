@@ -9,9 +9,17 @@
   import PatternGenerator from './components/PatternGenerator.svelte';
   import PatternCard from './components/PatternCard.svelte';
   import { assets } from './lib/data/assets.svelte';
-  import { extractInnerSvg, getDimensions } from './lib/utils/assetProcessor';
+  import { getDimensions } from './lib/utils/assetProcessor';
   import { konami } from './lib/actions/konami';
   import { createAndDownloadZip } from './lib/services/download';
+  import {
+    store,
+    saveCustomAsset,
+    saveCustomPattern,
+    toggleAssetSelection,
+    changeAssetFormat,
+    changeVideoFormat,
+  } from './lib/stores/store.svelte';
 
   let konamiActive = $state(false);
 
@@ -45,172 +53,12 @@
     assets.logos = assets.logos;
   });
 
-  let selectedAssets = $state([]);
-  let customAssets = $state([]);
-  let customPatterns = $state([]);
-  let editingLogo = $state(null);
-
-  function handleSaveCustomAsset(customAsset) {
-    const originalLogo = assets.logos.find(
-      (l) => l.id === customAsset.originalId,
-    );
-    const newId = `${originalLogo ? originalLogo.id : 'custom'}-custom-${Date.now()}`;
-
-    const newAsset = {
-      ...customAsset,
-      id: newId,
-      type: 'custom',
-    };
-    customAssets = [...customAssets, newAsset];
-    const defaultFormat =
-      newAsset.extension === 'svg' ? ['svg'] : [newAsset.extension];
-    selectedAssets = [
-      ...selectedAssets,
-      { id: newAsset.id, formats: defaultFormat, assetType: 'logo' },
-    ];
-  }
-
-  async function handleSaveCustomPattern(patternData) {
-    try {
-      const response = await fetch(patternData.basePatternUrl);
-      if (!response.ok) throw new Error('Не удалось загрузить шаблон паттерна');
-      const svgTemplateText = await response.text();
-
-      const innerSvgContent = extractInnerSvg(svgTemplateText);
-      const coloredInnerSvg = innerSvgContent.replace(
-        /currentColor/g,
-        patternData.patternColor,
-      );
-
-      const viewBoxMatch = svgTemplateText.match(
-        /viewBox="0 0 ([\d.]+) ([\d.]+)"/,
-      );
-      const patternWidth = viewBoxMatch ? viewBoxMatch[1] : '50';
-      const patternHeight = viewBoxMatch ? viewBoxMatch[2] : '50';
-
-      const finalSvg = `
-        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <pattern id="p" width="${patternWidth}" height="${patternHeight}" patternUnits="userSpaceOnUse">
-              ${coloredInnerSvg}
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="${patternData.backgroundColor}"/>
-          <rect width="100%" height="100%" fill="url(#p)"/>
-        </svg>`.trim();
-
-      const dataUrl =
-        'data:image/svg+xml;base64,' +
-        btoa(unescape(encodeURIComponent(finalSvg)));
-
-      const newPattern = {
-        ...patternData,
-        id: `pattern-${patternData.baseId}-${Date.now()}`,
-        type: 'custom',
-        dataUrl: dataUrl,
-      };
-
-      customPatterns = [...customPatterns, newPattern];
-      selectedAssets = [
-        ...selectedAssets,
-        { id: newPattern.id, formats: ['svg'], assetType: 'pattern' },
-      ];
-    } catch (error) {
-      console.error('Ошибка при создании кастомного паттерна:', error);
-    }
-  }
-
-  function handleToggle(detail) {
-    const { id, checked, assetType } = detail;
-    if (assetType === 'video') return;
-    const asset =
-      assets.logos.find((a) => a.id === id) ||
-      customAssets.find((a) => a.id === id) ||
-      customPatterns.find((a) => a.id === id);
-    if (!asset) return;
-
-    if (checked) {
-      let defaultFormats = [];
-      if (assetType === 'logo') {
-        defaultFormats =
-          asset.extension === 'svg' ? ['svg'] : [asset.extension];
-      } else if (assetType === 'pattern') {
-        defaultFormats = ['svg'];
-      }
-
-      selectedAssets = [
-        ...selectedAssets,
-        { id, formats: defaultFormats, assetType },
-      ];
-    } else {
-      selectedAssets = selectedAssets.filter((item) => item.id !== id);
-    }
-  }
-
-  function handleFormatChange(detail) {
-    const { id, format, checked } = detail;
-    selectedAssets = selectedAssets
-      .map((item) => {
-        if (item.id === id) {
-          const newFormats = checked
-            ? [...item.formats, format]
-            : item.formats.filter((f) => f !== format);
-          return { ...item, formats: newFormats };
-        }
-        return item;
-      })
-      .filter((item) => item.formats.length > 0);
-  }
-
-  function handleVideoFormatChange(detail) {
-    const { id, format, checked } = detail;
-
-    const entryIndex = selectedAssets.findIndex(
-      (item) => item.id === id && item.assetType === 'video',
-    );
-
-    if (checked) {
-      if (entryIndex > -1) {
-        selectedAssets = selectedAssets.map((item, index) => {
-          if (index === entryIndex) {
-            return { ...item, formats: [...item.formats, format] };
-          }
-          return item;
-        });
-      } else {
-        selectedAssets = [
-          ...selectedAssets,
-          { id, formats: [format], assetType: 'video' },
-        ];
-      }
-    } else {
-      if (entryIndex > -1) {
-        const newFormats = selectedAssets[entryIndex].formats.filter(
-          (f) => f !== format,
-        );
-
-        if (newFormats.length > 0) {
-          selectedAssets = selectedAssets.map((item, index) => {
-            if (index === entryIndex) {
-              return { ...item, formats: newFormats };
-            }
-            return item;
-          });
-        } else {
-          selectedAssets = selectedAssets.filter(
-            (_, index) => index !== entryIndex,
-          );
-        }
-      }
-    }
-  }
-
   function handleDownload() {
     createAndDownloadZip({
-      selectedAssets,
+      selectedAssets: store.selectedAssets,
       allAssets: assets,
-      customAssets,
-      customPatterns,
+      customAssets: store.customAssets,
+      customPatterns: store.customPatterns,
     });
   }
 </script>
@@ -247,8 +95,8 @@
 	"
       onclick={handleDownload}
     >
-      {selectedAssets.length
-        ? `Скачать выбранное (${selectedAssets.length})`
+      {store.selectedAssets.length
+        ? `Скачать выбранное (${store.selectedAssets.length})`
         : `Скачать все материалы`}
     </button>
   </div>
@@ -264,35 +112,37 @@
             <AssetCard
               asset={logo}
               baseLogo={logo}
-              onToggle={handleToggle}
-              checked={selectedAssets.some((item) => item.id === logo.id)}
-              onFormatChange={handleFormatChange}
-              selectedFormats={selectedAssets.find(
+              onToggle={toggleAssetSelection}
+              checked={store.selectedAssets.some((item) => item.id === logo.id)}
+              onFormatChange={changeAssetFormat}
+              selectedFormats={store.selectedAssets.find(
                 (item) => item.id === logo.id,
               )?.formats || []}
               type="original"
-              onEdit={() => (editingLogo = logo)}
+              onEdit={() => (store.editingLogo = logo)}
             />
           {/each}
         </ul>
 
-        {#if customAssets.length > 0}
+        {#if store.customAssets.length > 0}
           <h3 class="mt-8 text-2xl font-semibold">Ваши вариации</h3>
           <ul
             class="grid grid-cols-[repeat(auto-fill,minmax(288px,1fr))] gap-4"
             role="listbox"
           >
-            {#each customAssets as logo (logo.id)}
+            {#each store.customAssets as logo (logo.id)}
               {@const baseLogo = assets.logos.find(
                 (l) => l.id === logo.originalId,
               )}
               <AssetCard
                 asset={logo}
                 {baseLogo}
-                onToggle={handleToggle}
-                checked={selectedAssets.some((item) => item.id === logo.id)}
-                onFormatChange={handleFormatChange}
-                selectedFormats={selectedAssets.find(
+                onToggle={toggleAssetSelection}
+                checked={store.selectedAssets.some(
+                  (item) => item.id === logo.id,
+                )}
+                onFormatChange={changeAssetFormat}
+                selectedFormats={store.selectedAssets.find(
                   (item) => item.id === logo.id,
                 )?.formats || []}
                 type="custom"
@@ -352,13 +202,13 @@
         <h2 class="text-2xl font-semibold">Видео-материалы</h2>
         <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
           {#each assets.videos as video (video.id)}
-            {@const selectedVideoEntry = selectedAssets.find(
+            {@const selectedVideoEntry = store.selectedAssets.find(
               (item) => item.id === video.id && item.assetType === 'video',
             )}
             <VideoAssetCard
               {video}
               selectedFormats={selectedVideoEntry?.formats || []}
-              onToggle={handleVideoFormatChange}
+              onToggle={changeVideoFormat}
             />
           {/each}
         </div>
@@ -370,19 +220,21 @@
         <PatternGenerator
           patterns={assets.patterns}
           brandColors={assets.colors}
-          onSave={handleSaveCustomPattern}
+          onSave={saveCustomPattern}
         />
-        {#if customPatterns.length > 0}
+        {#if store.customPatterns.length > 0}
           <h3 class="mt-4 text-xl font-semibold">Ваши паттерны:</h3>
           <ul
             class="grid grid-cols-[repeat(auto-fill,minmax(288px,1fr))] gap-4"
           >
-            {#each customPatterns as pattern (pattern.id)}
+            {#each store.customPatterns as pattern (pattern.id)}
               <PatternCard
                 {pattern}
                 onToggle={(detail) =>
-                  handleToggle({ ...detail, assetType: 'pattern' })}
-                checked={selectedAssets.some((item) => item.id === pattern.id)}
+                  toggleAssetSelection({ ...detail, assetType: 'pattern' })}
+                checked={store.selectedAssets.some(
+                  (item) => item.id === pattern.id,
+                )}
               />
             {/each}
           </ul>
@@ -392,10 +244,10 @@
   </main>
 </div>
 
-{#if editingLogo}
+{#if store.editingLogo}
   <EditorModal
-    logo={editingLogo}
-    onSave={handleSaveCustomAsset}
-    onClose={() => (editingLogo = null)}
+    logo={store.editingLogo}
+    onSave={saveCustomAsset}
+    onClose={() => (store.editingLogo = null)}
   />
 {/if}
