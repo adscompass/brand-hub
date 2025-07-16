@@ -20,6 +20,8 @@
     changeAssetFormat,
     changeVideoFormat,
   } from './lib/stores/store.svelte';
+  import AboutSection from './components/AboutSection.svelte';
+  import ManagementCard from './components/ManagementCard.svelte';
 
   let konamiActive = $state(false);
 
@@ -102,6 +104,24 @@
   </div>
 
   <main class="h-full pt-8">
+    <section class="my-16">
+      <div class="container">
+        <AboutSection content={assets.aboutCompany} />
+      </div>
+    </section>
+
+    <section class="mb-10">
+      <div class="container flex flex-col gap-8">
+        <h2 class="text-center text-3xl font-bold">Руководство</h2>
+        <div
+          class="grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+        >
+          {#each assets.managementPhotos as photo (photo.id)}
+            <ManagementCard {photo} />
+          {/each}
+        </div>
+      </div>
+    </section>
     <section class="mb-10">
       <div class="container flex flex-col gap-3">
         <h2 class="text-2xl font-semibold">Логотипы</h2>
