@@ -216,7 +216,7 @@
     </section>
     <section class="mb-10">
       <div class="container flex flex-col gap-8">
-        <h2 class="text-2xl font-semibold">Генератор Паттернов</h2>
+        <h2 class="text-2xl font-semibold">Генератор паттернов</h2>
         <PatternGenerator
           patterns={assets.patterns}
           brandColors={assets.colors}

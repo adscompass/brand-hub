@@ -144,7 +144,6 @@ export async function createAndDownloadZip({
           const svgTemplateText = await response.text();
 
           const innerSvgContent = extractInnerSvg(svgTemplateText);
-
           const coloredInnerSvg = innerSvgContent.replace(
             /currentColor/g,
             pattern.patternColor,
@@ -153,8 +152,12 @@ export async function createAndDownloadZip({
           const viewBoxMatch = svgTemplateText.match(
             /viewBox="0 0 ([\d.]+) ([\d.]+)"/,
           );
-          const patternWidth = viewBoxMatch ? viewBoxMatch[1] : '50';
-          const patternHeight = viewBoxMatch ? viewBoxMatch[2] : '50';
+          const baseWidth = viewBoxMatch ? parseFloat(viewBoxMatch[1]) : 50;
+          const baseHeight = viewBoxMatch ? parseFloat(viewBoxMatch[2]) : 50;
+
+          const padding = pattern.padding || 0;
+          const patternWidth = baseWidth + padding;
+          const patternHeight = baseHeight + padding;
 
           const finalSvg = `
             <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">

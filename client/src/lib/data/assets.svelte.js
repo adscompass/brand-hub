@@ -176,9 +176,19 @@ export const assets = $state({
   ],
   patterns: [
     {
-      id: 'diamond-grid',
+      id: 'diamond',
       name: 'Ромбовидная сетка',
-      url: '/patterns/diamond-grid.svg',
+      url: '/patterns/diamond.svg',
+    },
+    {
+      id: 'square',
+      name: 'Квадратная сетка',
+      url: '/patterns/square.svg',
+    },
+    {
+      id: 'mesh',
+      name: 'Сетка',
+      url: '/patterns/mesh.svg',
     },
   ],
 });

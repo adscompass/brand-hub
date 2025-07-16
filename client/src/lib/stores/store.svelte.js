@@ -43,8 +43,11 @@ export async function saveCustomPattern(patternData) {
     const viewBoxMatch = svgTemplateText.match(
       /viewBox="0 0 ([\d.]+) ([\d.]+)"/,
     );
-    const patternWidth = viewBoxMatch ? viewBoxMatch[1] : '50';
-    const patternHeight = viewBoxMatch ? viewBoxMatch[2] : '50';
+    const baseWidth = viewBoxMatch ? parseFloat(viewBoxMatch[1]) : 50;
+    const baseHeight = viewBoxMatch ? parseFloat(viewBoxMatch[2]) : 50;
+    const padding = patternData.padding || 0;
+    const patternWidth = baseWidth + padding;
+    const patternHeight = baseHeight + padding;
 
     const finalSvg = `
         <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
@@ -66,6 +69,7 @@ export async function saveCustomPattern(patternData) {
       id: `pattern-${patternData.baseId}-${Date.now()}`,
       type: 'custom',
       dataUrl: dataUrl,
+      padding: padding,
     };
 
     store.customPatterns = [...store.customPatterns, newPattern];
