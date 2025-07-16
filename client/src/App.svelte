@@ -4,7 +4,7 @@
   import AssetCard from './components/AssetCard.svelte';
   import ColorCard from './components/ColorCard.svelte';
   import TypographyPlayground from './components/TypographyPlayground.svelte';
-  import { onMount, onDestroy } from 'svelte';
+  import { onMount } from 'svelte';
   import GuidelineSlider from './components/GuidelineSlider.svelte';
   import VideoAssetCard from './components/VideoAssetCard.svelte';
   import PatternGenerator from './components/PatternGenerator.svelte';
@@ -15,52 +15,20 @@
     getDimensions,
     svgToPng,
   } from './lib/utils/assetProcessor';
+  import { konami } from './lib/actions/konami';
 
-  const konamiCodeSequence = [
-    'ArrowUp',
-    'ArrowUp',
-    'ArrowDown',
-    'ArrowDown',
-    'ArrowLeft',
-    'ArrowRight',
-    'ArrowLeft',
-    'ArrowRight',
-    'b',
-    'a',
-  ];
-  let konamiCodePosition = 0;
   let konamiActive = $state(false);
 
-  function handleKeyDown(event) {
-    const expectedKey = konamiCodeSequence[konamiCodePosition];
-
-    if (event.key.toLowerCase() === expectedKey.toLowerCase()) {
-      konamiCodePosition++;
-
-      if (konamiCodePosition === konamiCodeSequence.length) {
-        console.log(
-          '%cКОД KONAMI АКТИВИРОВАН!',
-          'color: limegreen; font-size: 24px; font-weight: bold;',
-        );
-        konamiActive = true;
-        setTimeout(() => {
-          konamiActive = false;
-        }, 10000);
-
-        konamiCodePosition = 0;
-      }
-    } else {
-      konamiCodePosition = 0;
-    }
+  function activateRaveMode() {
+    console.log(
+      '%cКОД KONAMI АКТИВИРОВАН!',
+      'color: limegreen; font-size: 24px; font-weight: bold;',
+    );
+    konamiActive = true;
+    setTimeout(() => {
+      konamiActive = false;
+    }, 10000);
   }
-
-  onMount(() => {
-    document.addEventListener('keydown', handleKeyDown);
-  });
-
-  onDestroy(() => {
-    document.removeEventListener('keydown', handleKeyDown);
-  });
 
   onMount(async () => {
     console.log(
@@ -455,6 +423,7 @@
 <div
   class="flex min-h-screen grow flex-col bg-[#08090a] text-white"
   class:rave-mode={konamiActive}
+  use:konami={activateRaveMode}
 >
   <header class="container flex flex-col items-center gap-4 pb-4 pt-10">
     <h1 class="flex flex-col items-center text-5xl font-semibold">
