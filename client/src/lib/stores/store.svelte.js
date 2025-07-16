@@ -1,5 +1,4 @@
 import { assets } from '../data/assets.svelte';
-import { extractInnerSvg } from '../utils/assetProcessor';
 
 export const store = $state({
   selectedAssets: [],
@@ -34,7 +33,8 @@ export async function saveCustomPattern(patternData) {
     if (!response.ok) throw new Error('Не удалось загрузить шаблон паттерна');
     const svgTemplateText = await response.text();
 
-    const innerSvgContent = extractInnerSvg(svgTemplateText);
+    const innerSvgContent =
+      svgTemplateText.match(/<svg[^>]*>([\s\S]*)<\/svg>/)?.[1] || '';
     const coloredInnerSvg = innerSvgContent.replace(
       /currentColor/g,
       patternData.patternColor,
@@ -45,20 +45,12 @@ export async function saveCustomPattern(patternData) {
     );
     const baseWidth = viewBoxMatch ? parseFloat(viewBoxMatch[1]) : 50;
     const baseHeight = viewBoxMatch ? parseFloat(viewBoxMatch[2]) : 50;
-    const padding = patternData.padding || 0;
-    const patternWidth = baseWidth + padding;
-    const patternHeight = baseHeight + padding;
 
     const finalSvg = `
-        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <pattern id="p" width="${patternWidth}" height="${patternHeight}" patternUnits="userSpaceOnUse">
-              ${coloredInnerSvg}
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="${patternData.backgroundColor}"/>
-          <rect width="100%" height="100%" fill="url(#p)"/>
-        </svg>`.trim();
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${baseWidth} ${baseHeight}">
+        <rect width="100%" height="100%" fill="${patternData.backgroundColor}" />
+        ${coloredInnerSvg}
+      </svg>`.trim();
 
     const dataUrl =
       'data:image/svg+xml;base64,' +
@@ -69,14 +61,14 @@ export async function saveCustomPattern(patternData) {
       id: `pattern-${patternData.baseId}-${Date.now()}`,
       type: 'custom',
       dataUrl: dataUrl,
-      padding: padding,
     };
 
-    store.customPatterns = [...store.customPatterns, newPattern];
-    store.selectedAssets = [
-      ...store.selectedAssets,
-      { id: newPattern.id, formats: ['svg'], assetType: 'pattern' },
-    ];
+    store.customPatterns.push(newPattern);
+    store.selectedAssets.push({
+      id: newPattern.id,
+      formats: ['svg', 'png'],
+      assetType: 'pattern',
+    });
   } catch (error) {
     console.error('Ошибка при создании кастомного паттерна:', error);
   }

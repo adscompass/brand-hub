@@ -3,62 +3,31 @@
   let selectedPattern = $state(patterns[0]);
   let patternColor = $state(brandColors[0].items[0].hex);
   let backgroundColor = $state(brandColors[0].items[1].hex);
-  let padding = $state(0);
-  let previewMode = $state('tile');
 
-  const previewData = $derived.by(() => {
-    if (!selectedPattern.svgContent) return { style: '', type: 'empty' };
+  const previewSrc = $derived.by(() => {
+    if (!selectedPattern.svgContent) return '';
 
     const innerSvgContent =
       selectedPattern.svgContent.match(/<svg[^>]*>([\s\S]*)<\/svg>/)?.[1] || '';
-
     const coloredInnerSvg = innerSvgContent.replace(
       /currentColor/g,
       patternColor,
     );
-
     const viewBoxMatch = selectedPattern.svgContent.match(
       /viewBox="0 0 ([\d.]+) ([\d.]+)"/,
     );
     const baseWidth = viewBoxMatch ? parseFloat(viewBoxMatch[1]) : 50;
     const baseHeight = viewBoxMatch ? parseFloat(viewBoxMatch[2]) : 50;
 
-    if (previewMode === 'tile') {
-      const tileSvg = `
-        <svg width="100%" height="100%" viewBox="0 0 ${baseWidth} ${baseHeight}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
-          <rect width="100%" height="100%" fill="${backgroundColor}" />
-          ${coloredInnerSvg}
-        </svg>`;
+    const tileSvg = `
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${baseWidth} ${baseHeight}">
+        <rect width="100%" height="100%" fill="${backgroundColor}" />
+        ${coloredInnerSvg}
+      </svg>`;
 
-      const dataUrl =
-        'data:image/svg+xml;base64,' +
-        btoa(unescape(encodeURIComponent(tileSvg)));
-      return {
-        type: 'tile',
-        src: dataUrl,
-      };
-    } else {
-      const patternWidth = baseWidth + padding;
-      const patternHeight = baseHeight + padding;
-      const infiniteSvg = `
-        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <pattern id="p" width="${patternWidth}" height="${patternHeight}" patternUnits="userSpaceOnUse">
-              ${coloredInnerSvg}
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="${backgroundColor}"/>
-          <rect width="100%" height="100%" fill="url(#p)"/>
-        </svg>`;
-
-      const dataUrl =
-        'data:image/svg+xml;base64,' +
-        btoa(unescape(encodeURIComponent(infiniteSvg)));
-      return {
-        style: `background-image: url('${dataUrl}'); background-size: cover;`,
-        type: 'infinite',
-      };
-    }
+    return (
+      'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(tileSvg)))
+    );
   });
 
   $effect(() => {
@@ -79,7 +48,6 @@
       basePatternUrl: selectedPattern.url,
       patternColor: patternColor,
       backgroundColor: backgroundColor,
-      padding: padding,
     });
   }
 </script>
@@ -143,45 +111,6 @@
       </div>
     </div>
 
-    <div>
-      <label for="padding-slider" class="mb-2 block font-semibold"
-        >Отступ между элементами: {padding}px</label
-      >
-      <input
-        id="padding-slider"
-        type="range"
-        min="0"
-        max="150"
-        step="1"
-        bind:value={padding}
-        class="w-full"
-      />
-    </div>
-
-    <div>
-      <h4 class="mb-2 font-semibold">Режим превью</h4>
-      <div class="flex w-full rounded-md bg-white/10 p-1 text-sm">
-        <button
-          onclick={() => (previewMode = 'infinite')}
-          class="flex-1 rounded-md px-3 py-1.5 transition-colors {previewMode ===
-          'infinite'
-            ? 'bg-[#5e6ad2]'
-            : 'hover:bg-white/10'}"
-        >
-          Фон
-        </button>
-        <button
-          onclick={() => (previewMode = 'tile')}
-          class="flex-1 rounded-md px-3 py-1.5 transition-colors {previewMode ===
-          'tile'
-            ? 'bg-[#5e6ad2]'
-            : 'hover:bg-white/10'}"
-        >
-          Тайл
-        </button>
-      </div>
-    </div>
-
     <button
       onclick={handleSave}
       class="mt-2 w-full rounded-md bg-white/10 py-2 text-center font-semibold transition-colors duration-300 hover:bg-white/20"
@@ -191,17 +120,13 @@
   </div>
 
   <div
-    class="flex aspect-video h-full w-full grow place-items-center items-center justify-center rounded-lg bg-black/20 shadow-inner"
+    class="grid aspect-video w-full place-items-center rounded-lg bg-black/20 p-4 shadow-inner"
     aria-label="Превью сгенерированного паттерна"
   >
-    {#if previewData.type === 'infinite'}
-      <div class="h-full w-full" style={previewData.style}></div>
-    {:else if previewData.type === 'tile'}
-      <img
-        src={previewData.src}
-        alt="Превью одиночного тайла"
-        class="max-h-full max-w-full object-contain"
-      />
-    {/if}
+    <img
+      src={previewSrc}
+      alt="Превью одиночного тайла"
+      class="max-h-full max-w-full object-contain"
+    />
   </div>
 </div>

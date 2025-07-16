@@ -174,26 +174,6 @@ export async function createAndDownloadZip({
           const baseWidth = viewBoxMatch ? parseFloat(viewBoxMatch[1]) : 50;
           const baseHeight = viewBoxMatch ? parseFloat(viewBoxMatch[2]) : 50;
 
-          const padding = pattern.padding || 0;
-          const patternWidth = baseWidth + padding;
-          const patternHeight = baseHeight + padding;
-
-          const infinitePatternSvg = `
-            <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-                <defs>
-                    <pattern id="p" width="${patternWidth}" height="${patternHeight}" patternUnits="userSpaceOnUse">
-                        ${coloredInnerSvg}
-                    </pattern>
-                </defs>
-                <rect width="100%" height="100%" fill="${pattern.backgroundColor}"/>
-                <rect width="100%" height="100%" fill="url(#p)"/>
-            </svg>`;
-
-          patternsFolder.file(
-            `${pattern.id}_infinite.svg`,
-            infinitePatternSvg.trim(),
-          );
-
           const tileWithBgSvg = `
             <svg 
                 width="${baseWidth}" 
