@@ -159,18 +159,67 @@ export async function createAndDownloadZip({
           const patternWidth = baseWidth + padding;
           const patternHeight = baseHeight + padding;
 
-          const finalSvg = `
+          const infinitePatternSvg = `
             <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-              <defs>
-                <pattern id="p" width="${patternWidth}" height="${patternHeight}" patternUnits="userSpaceOnUse">
-                  ${coloredInnerSvg}
-                </pattern>
-              </defs>
-              <rect width="100%" height="100%" fill="${pattern.backgroundColor}"/>
-              <rect width="100%" height="100%" fill="url(#p)"/>
+                <defs>
+                    <pattern id="p" width="${patternWidth}" height="${patternHeight}" patternUnits="userSpaceOnUse">
+                        ${coloredInnerSvg}
+                    </pattern>
+                </defs>
+                <rect width="100%" height="100%" fill="${pattern.backgroundColor}"/>
+                <rect width="100%" height="100%" fill="url(#p)"/>
             </svg>`;
 
-          patternsFolder.file(`${pattern.id}.svg`, finalSvg.trim());
+          patternsFolder.file(
+            `${pattern.id}_infinite.svg`,
+            infinitePatternSvg.trim(),
+          );
+
+          const tileWithBgSvg = `
+            <svg 
+                width="${baseWidth}" 
+                height="${baseHeight}" 
+                viewBox="0 0 ${baseWidth} ${baseHeight}" 
+                xmlns="http://www.w3.org/2000/svg"
+            >
+                <rect width="100%" height="100%" fill="${pattern.backgroundColor}" />
+                ${coloredInnerSvg}
+            </svg>`;
+          patternsFolder.file(
+            `${pattern.id}_tile_with_bg.svg`,
+            tileWithBgSvg.trim(),
+          );
+
+          const pngTileBlob = await svgToPng(tileWithBgSvg, 1024, 1024);
+          if (pngTileBlob) {
+            patternsFolder.file(`${pattern.id}_tile.png`, pngTileBlob);
+          }
+
+          const tileTransparentSvg = `
+            <svg 
+                width="${baseWidth}" 
+                height="${baseHeight}" 
+                viewBox="0 0 ${baseWidth} ${baseHeight}" 
+                xmlns="http://www.w3.org/2000/svg"
+            >
+                ${coloredInnerSvg}
+            </svg>`;
+          patternsFolder.file(
+            `${pattern.id}_tile_transparent.svg`,
+            tileTransparentSvg.trim(),
+          );
+
+          const pngTileTransparentBlob = await svgToPng(
+            tileTransparentSvg,
+            1024,
+            1024,
+          );
+          if (pngTileTransparentBlob) {
+            patternsFolder.file(
+              `${pattern.id}_tile_transparent.png`,
+              pngTileTransparentBlob,
+            );
+          }
         } catch (error) {
           console.error(`Ошибка при обработке паттерна ${pattern.id}:`, error);
         }
