@@ -120,7 +120,7 @@
   </div>
 
   <div
-    class="grid aspect-video w-full place-items-center rounded-lg bg-black/20 p-4 shadow-inner"
+    class="flex aspect-video w-full justify-center rounded-lg bg-white/5 p-4 shadow-inner"
     aria-label="Превью сгенерированного паттерна"
   >
     <img
