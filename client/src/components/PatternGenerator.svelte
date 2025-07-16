@@ -4,9 +4,11 @@
   let patternColor = $state(brandColors[0].items[0].hex);
   let backgroundColor = $state(brandColors[0].items[1].hex);
   let padding = $state(0);
+  let previewMode = $state('tile');
 
-  const previewStyle = $derived.by(() => {
-    if (!selectedPattern.svgContent) return '';
+  const previewData = $derived.by(() => {
+    if (!selectedPattern.svgContent) return { style: '', type: 'empty' };
+
     const innerSvgContent =
       selectedPattern.svgContent.match(/<svg[^>]*>([\s\S]*)<\/svg>/)?.[1] || '';
 
@@ -21,25 +23,42 @@
     const baseWidth = viewBoxMatch ? parseFloat(viewBoxMatch[1]) : 50;
     const baseHeight = viewBoxMatch ? parseFloat(viewBoxMatch[2]) : 50;
 
-    const patternWidth = baseWidth + padding;
-    const patternHeight = baseHeight + padding;
+    if (previewMode === 'tile') {
+      const tileSvg = `
+        <svg width="100%" height="100%" viewBox="0 0 ${baseWidth} ${baseHeight}" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+          <rect width="100%" height="100%" fill="${backgroundColor}" />
+          ${coloredInnerSvg}
+        </svg>`;
 
-    const finalSvgForPreview = `
-      <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <pattern id="p" width="${patternWidth}" height="${patternHeight}" patternUnits="userSpaceOnUse">
-            ${coloredInnerSvg}
-          </pattern>
-        </defs>
-        <rect width="100%" height="100%" fill="${backgroundColor}"/>
-        <rect width="100%" height="100%" fill="url(#p)"/>
-      </svg>`;
+      const dataUrl =
+        'data:image/svg+xml;base64,' +
+        btoa(unescape(encodeURIComponent(tileSvg)));
+      return {
+        type: 'tile',
+        src: dataUrl,
+      };
+    } else {
+      const patternWidth = baseWidth + padding;
+      const patternHeight = baseHeight + padding;
+      const infiniteSvg = `
+        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="p" width="${patternWidth}" height="${patternHeight}" patternUnits="userSpaceOnUse">
+              ${coloredInnerSvg}
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="${backgroundColor}"/>
+          <rect width="100%" height="100%" fill="url(#p)"/>
+        </svg>`;
 
-    const dataUrl =
-      'data:image/svg+xml;base64,' +
-      btoa(unescape(encodeURIComponent(finalSvgForPreview)));
-
-    return `background-image: url('${dataUrl}'); background-size: cover;`;
+      const dataUrl =
+        'data:image/svg+xml;base64,' +
+        btoa(unescape(encodeURIComponent(infiniteSvg)));
+      return {
+        style: `background-image: url('${dataUrl}'); background-size: cover;`,
+        type: 'infinite',
+      };
+    }
   });
 
   $effect(() => {
@@ -139,6 +158,30 @@
       />
     </div>
 
+    <div>
+      <h4 class="mb-2 font-semibold">Режим превью</h4>
+      <div class="flex w-full rounded-md bg-white/10 p-1 text-sm">
+        <button
+          onclick={() => (previewMode = 'infinite')}
+          class="flex-1 rounded-md px-3 py-1.5 transition-colors {previewMode ===
+          'infinite'
+            ? 'bg-[#5e6ad2]'
+            : 'hover:bg-white/10'}"
+        >
+          Фон
+        </button>
+        <button
+          onclick={() => (previewMode = 'tile')}
+          class="flex-1 rounded-md px-3 py-1.5 transition-colors {previewMode ===
+          'tile'
+            ? 'bg-[#5e6ad2]'
+            : 'hover:bg-white/10'}"
+        >
+          Тайл
+        </button>
+      </div>
+    </div>
+
     <button
       onclick={handleSave}
       class="mt-2 w-full rounded-md bg-white/10 py-2 text-center font-semibold transition-colors duration-300 hover:bg-white/20"
@@ -148,8 +191,17 @@
   </div>
 
   <div
-    class="aspect-video w-full rounded-lg bg-black/20 shadow-inner"
-    style={previewStyle}
+    class="flex aspect-video h-full w-full grow place-items-center items-center justify-center rounded-lg bg-black/20 shadow-inner"
     aria-label="Превью сгенерированного паттерна"
-  ></div>
+  >
+    {#if previewData.type === 'infinite'}
+      <div class="h-full w-full" style={previewData.style}></div>
+    {:else if previewData.type === 'tile'}
+      <img
+        src={previewData.src}
+        alt="Превью одиночного тайла"
+        class="max-h-full max-w-full object-contain"
+      />
+    {/if}
+  </div>
 </div>
