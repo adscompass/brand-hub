@@ -21,7 +21,7 @@
     changeVideoFormat,
   } from './lib/stores/store.svelte';
   import AboutSection from './components/AboutSection.svelte';
-  import ManagementCard from './components/ManagementCard.svelte';
+  import ContactCard from './components/ContactCard.svelte';
 
   let konamiActive = $state(false);
 
@@ -112,12 +112,10 @@
 
     <section class="mb-10">
       <div class="container flex flex-col gap-8">
-        <h2 class="text-center text-3xl font-bold">Руководство</h2>
-        <div
-          class="grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
-        >
-          {#each assets.managementPhotos as photo (photo.id)}
-            <ManagementCard {photo} />
+        <h2 class="text-center text-3xl font-bold">Наша команда</h2>
+        <div class="grid grid-cols-1 gap-8 sm:grid-cols-2 md:grid-cols-3">
+          {#each assets.contacts as contact (contact.id)}
+            <ContactCard {contact} />
           {/each}
         </div>
       </div>

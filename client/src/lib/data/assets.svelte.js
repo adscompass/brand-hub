@@ -191,25 +191,67 @@ export const assets = $state({
       url: '/patterns/mesh.svg',
     },
   ],
-  managementPhotos: [
+  contacts: [
     {
-      id: 'john_doe',
-      name: 'Иван Иванов',
-      role: 'CEO / Основатель',
-      imageUrl: '/management/john-doe.jpg',
+      id: 'alex',
+      name: 'Алекс',
+      role: 'Team Lead',
+      email: 'partners@adscompass.com',
+      telegram: 'ads_compass',
+      photoUrl: '/team/alex.jpg',
     },
     {
-      id: 'jane_smith',
-      name: 'Мария Петрова',
-      role: 'CTO / Технический директор',
-      imageUrl: '/management/jane-smith.jpg',
+      id: 'alexander',
+      name: 'Александр',
+      role: 'Traffic Manager',
+      email: 'traffic@adscompass.com',
+      telegram: 'traffic_adscompass',
+      photoUrl: '/team/alexander.jpg',
+    },
+    {
+      id: 'marina',
+      name: 'Марина',
+      role: 'Account Manager',
+      email: 'corp@adscompass.com',
+      telegram: 'corp_adscompass',
+      photoUrl: '/team/marina.jpg',
+    },
+    {
+      id: 'stasya',
+      name: 'Стася',
+      role: 'Business Development',
+      email: 'advertising@adscompass.com',
+      telegram: 'adv_adscompass',
+      photoUrl: '/team/support.jpg',
+    },
+    {
+      id: 'katerina',
+      name: 'Катерина',
+      role: 'Account Manager',
+      email: 'web@adscompass.com',
+      telegram: 'web_adscompass',
+      photoUrl: '/team/support.jpg',
+    },
+    {
+      id: 'support',
+      name: 'Служба поддержки',
+      role: 'Dubai, UAE',
+      email: 'support@adscompass.com',
+      telegram: null,
+      photoUrl: '/team/support.jpg',
     },
   ],
-
   aboutCompany: {
-    mission:
-      'Наша миссия — предоставлять самые эффективные инструменты для паблишеров, помогая им расти и процветать в динамичном мире цифровой рекламы.',
-    vision:
-      'Мы стремимся стать стандартом качества и инноваций в индустрии аффилированного маркетинга, создавая прозрачную и взаимовыгодную экосистему для всех участников.',
+    heading: 'Международная рекламная сеть для покупки и продажи трафика',
+    paragraphs: [
+      'С 2013 года AdsCompass является экспертом в мире интернет-рекламы, предлагая выгодные условия для вебмастеров, рекламодателей, медиабайеров и рекламных сетей.',
+      'Мы работаем по моделям CPC/CPM и предоставляем доступ к трафику из более чем 200 стран мира в различных форматах: от Push-уведомлений и In-Page Push до нативной рекламы и Popunder. Наша Self-Serve платформа дает полный контроль над кампаниями, а интеграция по RTB открывает доступ к аукциону в реальном времени.',
+    ],
+    stats: [
+      { value: '9000+', label: 'Активных рекламодателей' },
+      { value: '5000+', label: 'Активных вебмастеров' },
+      { value: '30 млрд.', label: 'Запросов в день' },
+      { value: '10+', label: 'Лет на рынке' },
+    ],
   },
 });
