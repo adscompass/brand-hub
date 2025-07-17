@@ -158,6 +158,7 @@
               {/snippet}
 
               {#snippet meta()}
+                <!-- svelte-ignore a11y_figcaption_parent -->
                 <figcaption
                   class="pointer-coarse:opacity-100
           text-shadow-lg absolute left-4 top-4 font-semibold opacity-0 transition-opacity duration-300
