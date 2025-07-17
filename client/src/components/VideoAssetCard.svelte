@@ -18,10 +18,10 @@
     }
   });
 
-  function handleFormatToggle(format, isChecked) {
+  function handleFormatToggle(ratio, format, isChecked) {
     onToggle({
       id: video.id,
-      format: format.ratio,
+      format: { ratio: ratio, type: format },
       checked: isChecked,
       assetType: 'video',
     });
@@ -55,13 +55,16 @@
     {:else}
       <video
         bind:this={videoElement}
-        src={video.formats[0].url}
         class="h-full w-full object-contain"
         controls
         autoplay
         muted
         loop
-      ></video>
+      >
+        <source src={video.formats[0].urls.webp} type="video/webp" />
+        <source src={video.formats[0].urls.mp4} type="video/mp4" />
+        Ваш браузер не поддерживает это видео.
+      </video>
     {/if}
   </div>
 
@@ -71,34 +74,41 @@
     </h4>
     <div class="grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
       {#each video.formats as format (format.ratio)}
-        {@const inputId = `${video.id}-${format.ratio}`}
-        <div class="group">
-          <input
-            type="checkbox"
-            id={inputId}
-            class="sr-only"
-            checked={selectedFormats.includes(format.ratio)}
-            onchange={(e) =>
-              handleFormatToggle(format, e.currentTarget.checked)}
-          />
-          <label
-            for={inputId}
-            class="flex h-full cursor-pointer flex-col items-center justify-center gap-1 overflow-auto rounded-md bg-white/10 p-2 text-center text-white/80 transition-colors hover:bg-white/20"
-          >
-            <span class="font-semibold">{format.name}</span>
-            <span class="text-white/50">{format.resolution}</span>
-
-            <div
-              class="mt-1 flex h-4 w-4 items-center justify-center rounded border border-white/30 bg-white/10 transition-all
-                     group-has-[input:checked]:border-blue-500 group-has-[input:checked]:bg-blue-500"
-            >
-              <div
-                class="opacity-0 transition-opacity group-has-[input:checked]:opacity-100"
-              >
-                <Icon name="check" />
+        <div
+          class="flex flex-col justify-between gap-1 rounded-md bg-white/10 p-2"
+        >
+          <div class="text-center font-semibold">{format.name}</div>
+          <div class="text-center text-white/50">{format.resolution}</div>
+          <div class="mt-1 grid grid-cols-2 gap-1">
+            {#each Object.keys(format.urls) as type (type)}
+              {@const inputId = `${video.id}-${format.ratio}-${type}`}
+              {@const isSelected = selectedFormats.some(
+                (f) => f.ratio === format.ratio && f.type === type,
+              )}
+              <div class="group">
+                <input
+                  type="checkbox"
+                  id={inputId}
+                  class="sr-only"
+                  checked={isSelected}
+                  onchange={(e) =>
+                    handleFormatToggle(
+                      format.ratio,
+                      type,
+                      e.currentTarget.checked,
+                    )}
+                />
+                <label
+                  for={inputId}
+                  class="flex h-full cursor-pointer items-center justify-center rounded-sm p-1 text-center transition-colors {isSelected
+                    ? 'bg-blue-500'
+                    : 'bg-white/10 hover:bg-white/20'}"
+                >
+                  {type.toUpperCase()}
+                </label>
               </div>
-            </div>
-          </label>
+            {/each}
+          </div>
         </div>
       {/each}
     </div>

@@ -132,25 +132,37 @@ export const assets = $state({
           name: 'Горизонтальное (16:9)',
           ratio: '16x9',
           resolution: '1080×566',
-          url: '/videos/sample-video-16x9.mp4',
+          urls: {
+            mp4: '/videos/sample-video-16x9.mp4',
+            webp: '/videos/sample-video-16x9.webp',
+          },
         },
         {
           name: 'Stories (9:16)',
           ratio: '9x16',
           resolution: '1080×1920',
-          url: '/videos/sample-video-9x16.mp4',
+          urls: {
+            mp4: '/videos/sample-video-9x16.mp4',
+            webp: '/videos/sample-video-9x16.webp',
+          },
         },
         {
           name: 'Квадрат (1:1)',
           ratio: '1x1',
           resolution: '1080×1080',
-          url: '/videos/sample-video-1x1.mp4',
+          urls: {
+            mp4: '/videos/sample-video-1x1.mp4',
+            webp: '/videos/sample-video-1x1.webp',
+          },
         },
         {
           name: 'Портретное (4:5)',
           ratio: '4x5',
           resolution: '1080×1350',
-          url: '/videos/sample-video-4x5.mp4',
+          urls: {
+            mp4: '/videos/sample-video-4x5.mp4',
+            webp: '/videos/sample-video-4x5.webp',
+          },
         },
       ],
     },
@@ -163,13 +175,19 @@ export const assets = $state({
           name: 'Горизонтальное (16:9)',
           ratio: '16x9',
           resolution: '1080×566',
-          url: '/videos/sample-video-2-16x9.mp4',
+          urls: {
+            mp4: '/videos/sample-video-2-16x9.mp4',
+            webp: '/videos/sample-video-2-16x9.webp',
+          },
         },
         {
           name: 'Портретное (4:5)',
           ratio: '4x5',
           resolution: '1080×1350',
-          url: '/videos/sample-video-2-4x5.mp4',
+          urls: {
+            mp4: '/videos/sample-video-2-4x5.mp4',
+            webp: '/videos/sample-video-2-4x5.webp',
+          },
         },
       ],
     },

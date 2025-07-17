@@ -119,42 +119,37 @@ export function changeAssetFormat(detail) {
 }
 
 export function changeVideoFormat(detail) {
-  const { id, format, checked } = detail;
-  const entryIndex = store.selectedAssets.findIndex(
-    (item) => item.id === id && item.assetType === 'video',
+  const { id, format, checked, assetType } = detail;
+
+  const videoEntryIndex = store.selectedAssets.findIndex(
+    (item) => item.id === id && item.assetType === assetType,
   );
 
   if (checked) {
-    if (entryIndex > -1) {
-      store.selectedAssets = store.selectedAssets.map((item, index) => {
-        if (index === entryIndex) {
-          return { ...item, formats: [...item.formats, format] };
-        }
-        return item;
-      });
+    if (videoEntryIndex > -1) {
+      store.selectedAssets[videoEntryIndex].formats.push(format);
     } else {
-      store.selectedAssets = [
-        ...store.selectedAssets,
-        { id, formats: [format], assetType: 'video' },
-      ];
+      store.selectedAssets.push({
+        id,
+        assetType,
+        formats: [format],
+      });
     }
   } else {
-    if (entryIndex > -1) {
-      const newFormats = store.selectedAssets[entryIndex].formats.filter(
-        (f) => f !== format,
+    if (videoEntryIndex > -1) {
+      const formatIndexToRemove = store.selectedAssets[
+        videoEntryIndex
+      ].formats.findIndex(
+        (f) => f.ratio === format.ratio && f.type === format.type,
       );
-
-      if (newFormats.length > 0) {
-        store.selectedAssets = store.selectedAssets.map((item, index) => {
-          if (index === entryIndex) {
-            return { ...item, formats: newFormats };
-          }
-          return item;
-        });
-      } else {
-        store.selectedAssets = store.selectedAssets.filter(
-          (_, index) => index !== entryIndex,
+      if (formatIndexToRemove > -1) {
+        store.selectedAssets[videoEntryIndex].formats.splice(
+          formatIndexToRemove,
+          1,
         );
+      }
+      if (store.selectedAssets[videoEntryIndex].formats.length === 0) {
+        store.selectedAssets.splice(videoEntryIndex, 1);
       }
     }
   }

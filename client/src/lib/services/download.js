@@ -216,25 +216,41 @@ async function processPattern(assetItem, { customPatterns, zipFolders }) {
 
 async function processVideo(assetItem, { allAssets, zipFolders }) {
   const { id, formats } = assetItem;
-  const videoAsset = allAssets.videos.find((v) => v.id === id);
-  if (!videoAsset) return;
 
-  for (const ratio of formats) {
+  const videoAsset = allAssets.videos.find((v) => v.id === id);
+  if (!videoAsset) {
+    console.warn(`Видео с ID ${id} не найдено.`);
+    return;
+  }
+
+  for (const formatToDownload of formats) {
+    const { ratio, type } = formatToDownload;
+
     const formatInfo = videoAsset.formats.find((f) => f.ratio === ratio);
-    if (!formatInfo) continue;
+    if (!formatInfo) {
+      console.warn(
+        `Информация о формате с ratio ${ratio} для видео ${id} не найдена.`,
+      );
+      continue;
+    }
+
+    const url = formatInfo.urls[type];
+    if (!url) {
+      console.warn(
+        `URL для видео ${id} с форматом ${type} и ratio ${ratio} не найден.`,
+      );
+      continue;
+    }
 
     try {
-      const response = await fetch(formatInfo.url);
+      const response = await fetch(url);
       if (!response.ok)
-        throw new Error(`Ошибка сети при скачивании видео: ${formatInfo.url}`);
+        throw new Error(`Ошибка сети при скачивании видео: ${url}`);
       const blob = await response.blob();
-      const filename = `${videoAsset.id}-${formatInfo.ratio}.mp4`;
+      const filename = `${videoAsset.id}-${ratio}.${type}`;
       zipFolders.videos.file(filename, blob);
     } catch (error) {
-      console.error(
-        `Ошибка при обработке видео ${id} в формате ${ratio}:`,
-        error,
-      );
+      console.error(`Ошибка при обработке видео ${id} с URL ${url}:`, error);
     }
   }
 }
