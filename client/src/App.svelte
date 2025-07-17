@@ -1,13 +1,11 @@
 <script>
   import EditorModal from './components/EditorModal.svelte';
-  import AssetCard from './components/AssetCard.svelte';
   import ColorCard from './components/ColorCard.svelte';
   import TypographyPlayground from './components/TypographyPlayground.svelte';
   import { onMount } from 'svelte';
   import GuidelineSlider from './components/GuidelineSlider.svelte';
   import VideoAssetCard from './components/VideoAssetCard.svelte';
   import PatternGenerator from './components/PatternGenerator.svelte';
-  import PatternCard from './components/PatternCard.svelte';
   import { assets } from './lib/data/assets.svelte';
   import { getDimensions } from './lib/utils/assetProcessor';
   import { konami } from './lib/actions/konami';
@@ -62,6 +60,24 @@
       customAssets: store.customAssets,
       customPatterns: store.customPatterns,
     });
+  }
+
+  import AssetCard from './components/asset-card/AssetCard.svelte';
+  import LogoPreview from './components/asset-card/previews/LogoPreview.svelte';
+  import PatternPreview from './components/asset-card/previews/PatternPreview.svelte';
+  import FormatSelector from './components/asset-card/controls/FormatSelector.svelte';
+  import EditButton from './components/asset-card/controls/EditButton.svelte';
+
+  function getAvailableFormats(asset) {
+    if (asset.assetType === 'logo') {
+      if (asset.extension === 'svg') return ['svg', 'png', 'jpg', 'webp'];
+      if (['png', 'jpg'].includes(asset.extension))
+        return [...new Set([asset.extension, 'jpg', 'png', 'webp'])];
+    }
+    if (asset.assetType === 'pattern') {
+      return ['svg', 'png', 'jpg', 'webp'];
+    }
+    return [];
   }
 </script>
 
@@ -127,18 +143,47 @@
           class="mb-10 grid grid-cols-[repeat(auto-fill,minmax(288px,1fr))] gap-4"
         >
           {#each assets.logos as logo (logo.id)}
+            {@const assetData = {
+              ...logo,
+              assetType: 'logo',
+              background: logo.background,
+            }}
             <AssetCard
-              asset={logo}
-              baseLogo={logo}
-              onToggle={toggleAssetSelection}
+              asset={assetData}
               checked={store.selectedAssets.some((item) => item.id === logo.id)}
-              onFormatChange={changeAssetFormat}
-              selectedFormats={store.selectedAssets.find(
-                (item) => item.id === logo.id,
-              )?.formats || []}
-              type="original"
-              onEdit={() => (store.editingLogo = logo)}
-            />
+              onToggle={toggleAssetSelection}
+            >
+              {#snippet preview()}
+                <LogoPreview asset={logo} type="original" />
+              {/snippet}
+
+              {#snippet meta()}
+                <figcaption
+                  class="pointer-coarse:opacity-100
+          text-shadow-lg absolute left-4 top-4 font-semibold opacity-0 transition-opacity duration-300
+          group-hover:opacity-100"
+                  style="color: {logo.color}"
+                >
+                  {logo.name}
+                </figcaption>
+              {/snippet}
+
+              {#snippet controls({ onLastFormatDeselected })}
+                <FormatSelector
+                  asset={assetData}
+                  availableFormats={getAvailableFormats(assetData)}
+                  selectedFormats={store.selectedAssets.find(
+                    (item) => item.id === logo.id,
+                  )?.formats || []}
+                  onFormatChange={changeAssetFormat}
+                  {onLastFormatDeselected}
+                />
+                <EditButton
+                  asset={assetData}
+                  onEdit={() => (store.editingLogo = logo)}
+                />
+              {/snippet}
+            </AssetCard>
           {/each}
         </ul>
 
@@ -152,19 +197,35 @@
               {@const baseLogo = assets.logos.find(
                 (l) => l.id === logo.originalId,
               )}
+              {@const assetData = {
+                ...logo,
+                assetType: 'logo',
+                background: baseLogo.background,
+                baseLogo,
+              }}
               <AssetCard
-                asset={logo}
-                {baseLogo}
-                onToggle={toggleAssetSelection}
+                asset={assetData}
                 checked={store.selectedAssets.some(
                   (item) => item.id === logo.id,
                 )}
-                onFormatChange={changeAssetFormat}
-                selectedFormats={store.selectedAssets.find(
-                  (item) => item.id === logo.id,
-                )?.formats || []}
-                type="custom"
-              />
+                onToggle={toggleAssetSelection}
+              >
+                {#snippet preview()}
+                  <LogoPreview asset={logo} type="custom" {baseLogo} />
+                {/snippet}
+
+                {#snippet controls({ onLastFormatDeselected })}
+                  <FormatSelector
+                    asset={assetData}
+                    availableFormats={getAvailableFormats(assetData)}
+                    selectedFormats={store.selectedAssets.find(
+                      (item) => item.id === logo.id,
+                    )?.formats || []}
+                    onFormatChange={changeAssetFormat}
+                    {onLastFormatDeselected}
+                  />
+                {/snippet}
+              </AssetCard>
             {/each}
           </ul>
         {:else}
@@ -246,14 +307,34 @@
             class="grid grid-cols-[repeat(auto-fill,minmax(288px,1fr))] gap-4"
           >
             {#each store.customPatterns as pattern (pattern.id)}
-              <PatternCard
-                {pattern}
-                onToggle={(detail) =>
-                  toggleAssetSelection({ ...detail, assetType: 'pattern' })}
+              {@const assetData = {
+                ...pattern,
+                assetType: 'pattern',
+                background: pattern.backgroundColor,
+              }}
+              <AssetCard
+                asset={assetData}
                 checked={store.selectedAssets.some(
                   (item) => item.id === pattern.id,
                 )}
-              />
+                onToggle={toggleAssetSelection}
+              >
+                {#snippet preview()}
+                  <PatternPreview {pattern} />
+                {/snippet}
+
+                {#snippet controls({ onLastFormatDeselected })}
+                  <FormatSelector
+                    asset={assetData}
+                    availableFormats={getAvailableFormats(assetData)}
+                    selectedFormats={store.selectedAssets.find(
+                      (item) => item.id === pattern.id,
+                    )?.formats || []}
+                    onFormatChange={changeAssetFormat}
+                    {onLastFormatDeselected}
+                  />
+                {/snippet}
+              </AssetCard>
             {/each}
           </ul>
         {/if}
