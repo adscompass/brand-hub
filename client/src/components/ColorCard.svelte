@@ -3,6 +3,7 @@
   import convert from 'color-convert';
   import Icon from './Icon.svelte';
   import { copyToClipboard } from '../lib/utils/copy.js';
+  import { getLumaClass } from '../lib/utils/color.js';
 
   let { color } = $props();
   let copied = $state(false);
@@ -39,15 +40,6 @@
   const currentValue = $derived(
     allColorFormats[FORMATS[currentFormatIndex].key],
   );
-
-  const textColor = $derived.by(() => {
-    const hex = color.hex.replace('#', '');
-    const r = parseInt(hex.substring(0, 2), 16);
-    const g = parseInt(hex.substring(2, 4), 16);
-    const b = parseInt(hex.substring(4, 6), 16);
-    const luma = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-    return luma > 0.5 ? '#000000' : '#FFFFFF';
-  });
 
   async function handleCopy() {
     if (exploded || copied) return;
@@ -130,11 +122,14 @@
   onswipeleft={() => cycleFormat('next')}
   onswiperight={() => cycleFormat('prev')}
   onkeydown={handleKeyDown}
-  class="group relative flex aspect-square w-full cursor-pointer touch-pan-y select-none flex-col justify-between rounded-lg border border-white/10 p-4 text-left outline-offset-2 transition-all
+  class="{getLumaClass(
+    color.hex,
+    'text-black',
+    'text-white',
+  )} group relative flex aspect-square w-full cursor-pointer touch-pan-y select-none flex-col justify-between rounded-lg border border-white/10 p-4 text-left outline-offset-2 transition-all
   duration-300 hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-[#5e6ad2] active:scale-95 active:duration-75"
   class:exploded
   style:background-color={color.hex}
-  style:color={textColor}
   title="Нажмите, чтобы скопировать. Свайпните, чтобы изменить формат."
   role="button"
   tabindex="0"
@@ -152,8 +147,11 @@
   >
     <button
       type="button"
-      class="cursor-pointer rounded-full bg-black/20 p-2 transition-colors hover:bg-black/40 focus-visible:outline-2"
-      style="outline-color: {textColor};"
+      class="{getLumaClass(
+        color.hex,
+        'outline-black',
+        'outline-white',
+      )} cursor-pointer rounded-full bg-black/20 p-2 transition-colors hover:bg-black/40 focus-visible:outline-2"
       aria-label="Предыдущий формат"
       data-arrow="prev"
       onkeydown={(e) => {
@@ -169,8 +167,11 @@
     </button>
     <button
       type="button"
-      class="cursor-pointer rounded-full bg-black/20 p-2 transition-colors hover:bg-black/40 focus-visible:outline-2"
-      style="outline-color: {textColor};"
+      class="{getLumaClass(
+        color.hex,
+        'outline-black',
+        'outline-white',
+      )} cursor-pointer rounded-full bg-black/20 p-2 transition-colors hover:bg-black/40 focus-visible:outline-2"
       aria-label="Следующий формат"
       data-arrow="next"
       onkeydown={(e) => {
