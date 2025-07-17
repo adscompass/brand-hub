@@ -14,11 +14,28 @@
 
   let checkboxElement;
 
+  function getLumaClass(hex, blackClass, whiteClass) {
+    hex = hex.replace('#', '');
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    const luma = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luma > 0.5 ? blackClass : whiteClass;
+  }
+
+  const borderColorClass = $derived.by(() =>
+    getLumaClass(baseLogo.background, 'border-black/50', 'border-white/80'),
+  );
+
+  const outlineColorClass = $derived.by(() =>
+    getLumaClass(baseLogo.background, 'outline-black/50', 'outline-white/80'),
+  );
+
   const availableFormats = $derived.by(() => {
     if (asset.extension === 'svg') {
-      return ['svg', 'png'];
+      return ['svg', 'png', 'jpg', 'webp'];
     } else if (['png', 'jpg'].includes(asset.extension)) {
-      return [asset.extension];
+      return [...new Set([asset.extension, 'jpg', 'png', 'webp'])];
     }
     return [];
   });
@@ -68,13 +85,15 @@
 
     if (totalFormats === 1) {
       classes += ' rounded-full';
-    } else if (totalFormats === 2) {
+    } else {
       if (index === 0) {
         classes += ' rounded-l-full';
-      } else {
+      }
+      if (index === totalFormats - 1) {
         classes += ' rounded-r-full';
       }
     }
+
     return classes;
   });
 </script>
@@ -164,10 +183,10 @@
     </figure>
 
     <span
-      class="absolute right-4 top-4 h-7 w-7 cursor-pointer rounded-md border-2 border-white/80 bg-black/20 opacity-0
+      class="absolute right-4 top-4 h-7 w-7 cursor-pointer rounded-md border-2 {borderColorClass} bg-black/20 opacity-0
       outline-offset-2 backdrop-blur-sm transition-all duration-300 hover:bg-black/30
       active:bg-black/40 group-hover:opacity-100 group-has-[:focus-visible]:opacity-100
-      group-has-[input:checked]:opacity-100 group-has-[input[data-selected]:focus-visible]:outline-2 group-has-[input[data-selected]:focus-visible]:outline-[#ffffff]"
+      group-has-[input:checked]:opacity-100 group-has-[input[data-selected]:focus-visible]:outline-2 {outlineColorClass}"
     >
       <Icon name="check" />
     </span>
@@ -176,7 +195,7 @@
   {#if availableFormats.length > 0}
     <div
       class="group-has-[input:checked]:starting:opacity-0 starting:opacity-0 starting:hidden
-      transition-discrete absolute bottom-4 left-4 z-10 hidden h-8 w-28 gap-0 rounded-full border-2 border-white/80 opacity-0 transition-all duration-300
+      transition-discrete absolute bottom-4 left-4 z-10 hidden h-8 gap-0 rounded-full border-2 {borderColorClass} opacity-0 transition-all duration-300
       group-has-[input:checked]:flex group-has-[input:checked]:opacity-100"
     >
       {#each availableFormats as format, index (format)}
@@ -193,7 +212,7 @@
           <label
             for={`${asset.id}-format-${format}`}
             class="{formatButtonClasses(format, index)}  
-          outline-offset-4 outline-[#ffffff] group-has-[input:focus-visible]/format:outline-2"
+          outline-offset-4 {outlineColorClass} group-has-[input:focus-visible]/format:outline-2"
           >
             {format.toUpperCase()}
           </label>
@@ -207,7 +226,7 @@
       type="button"
       onclick={onEdit}
       class="pointer-coarse:opacity-100 pointer-fine:group-hover:opacity-100 pointer-fine:group-has-[:focus-visible]:opacity-100
-      absolute bottom-4 right-4 z-10 cursor-pointer rounded-full bg-black/30 p-2 opacity-0 outline-offset-2 outline-[#ffffff]
+      absolute bottom-4 right-4 z-10 cursor-pointer rounded-full bg-black/30 p-2 opacity-0 outline-offset-2 {outlineColorClass}
       backdrop-blur-sm transition-all duration-300 hover:bg-black/40 focus-visible:outline-2 active:bg-black/50"
       title="Настроить логотип"
       aria-label="Настроить логотип"

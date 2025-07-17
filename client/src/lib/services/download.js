@@ -1,5 +1,9 @@
 import JSZip from 'jszip';
-import { extractInnerSvg, svgToPng } from '../utils/assetProcessor';
+import {
+  convertToFormat,
+  extractInnerSvg,
+  svgToPng,
+} from '../utils/assetProcessor';
 import convert from 'color-convert';
 
 function determineAssetsToDownload({
@@ -51,65 +55,94 @@ async function processLogo(assetItem, { allAssets, customAssets, zipFolders }) {
     customAssets.find((a) => a.id === id);
   if (!asset) return;
 
+  let sourceImage = null;
+  let sourceSvgString = null;
+
+  if (asset.extension === 'svg') {
+    if (asset.type === 'custom') {
+      const baseLogo = allAssets.logos.find((l) => l.id === asset.originalId);
+      const response = await fetch(baseLogo.url);
+      const originalInnerSvgText = extractInnerSvg(await response.text());
+      const transform = `translate(${asset.logoX}, ${asset.logoY}) rotate(${asset.logoRotate || 0}) scale(${asset.logoScale}) translate(-${asset.originalSvgDimensions.width / 2}, -${asset.originalSvgDimensions.height / 2})`;
+      sourceSvgString = `<svg width="${asset.canvasWidth}" height="${asset.canvasHeight}" viewBox="0 0 ${asset.canvasWidth} ${asset.canvasHeight}" xmlns="http://www.w3.org/2000/svg"><g transform="${transform}">${originalInnerSvgText}</g></svg>`;
+    } else {
+      const response = await fetch(asset.url);
+      sourceSvgString = await response.text();
+    }
+  } else if (['png', 'jpg'].includes(asset.extension)) {
+    sourceImage = new Image();
+    sourceImage.src = asset.type === 'custom' ? asset.dataUrl : asset.url;
+  }
+
   for (const format of formats) {
     try {
       let fileBlob = null;
       let filename = `${asset.id}.${format}`;
+      const width = asset.canvasWidth || asset.width;
+      const height = asset.canvasHeight || asset.height;
 
-      if (asset.extension === 'svg') {
-        let svgContent = null;
-
-        if (asset.type === 'custom') {
-          const baseLogo = allAssets.logos.find(
-            (l) => l.id === asset.originalId,
-          );
-          const response = await fetch(baseLogo.url);
-          const originalInnerSvgText = extractInnerSvg(await response.text());
-
-          const transform = `translate(${asset.logoX}, ${asset.logoY}) rotate(${asset.logoRotate || 0}) scale(${asset.logoScale}) translate(-${
-            asset.originalSvgDimensions.width / 2
-          }, -${asset.originalSvgDimensions.height / 2})`;
-
-          svgContent = `
-                <svg 
-                  width="${asset.canvasWidth}" 
-                  height="${asset.canvasHeight}" 
-                  viewBox="0 0 ${asset.canvasWidth} ${asset.canvasHeight}" 
-                  xmlns="http://www.w3.org/2000/svg">
-                  <g transform="${transform}">
-                    ${originalInnerSvgText}
-                  </g>
-                </svg>
-              `;
-        } else {
-          const response = await fetch(asset.url);
-          svgContent = await response.text();
-        }
-
-        if (format === 'svg') {
-          fileBlob = new Blob([svgContent], {
-            type: 'image/svg+xml',
-          });
-        } else if (format === 'png') {
-          fileBlob = await svgToPng(
-            svgContent,
-            asset.canvasWidth || asset.width,
-            asset.canvasHeight || asset.height,
-          );
-        }
-      } else if (['png', 'jpg'].includes(asset.extension)) {
-        if (format === asset.extension) {
-          if (asset.type === 'custom' && asset.dataUrl) {
-            fileBlob = await (await fetch(asset.dataUrl)).blob();
-          } else {
-            const response = await fetch(asset.url);
-            fileBlob = await response.blob();
+      switch (format) {
+        case 'svg':
+          if (sourceSvgString) {
+            fileBlob = new Blob([sourceSvgString], { type: 'image/svg+xml' });
           }
-        }
+          break;
+        case 'png':
+          if (sourceSvgString) {
+            fileBlob = await convertToFormat(
+              sourceSvgString,
+              'png',
+              width,
+              height,
+            );
+          } else if (sourceImage) {
+            fileBlob = await convertToFormat(sourceImage, 'png', width, height);
+          }
+          break;
+        case 'jpg':
+          if (sourceSvgString) {
+            fileBlob = await convertToFormat(
+              sourceSvgString,
+              'jpeg',
+              width,
+              height,
+            );
+          } else if (sourceImage) {
+            fileBlob = await convertToFormat(
+              sourceImage,
+              'jpeg',
+              width,
+              height,
+            );
+          }
+          break;
+        case 'webp':
+          if (sourceSvgString) {
+            fileBlob = await convertToFormat(
+              sourceSvgString,
+              'webp',
+              width,
+              height,
+            );
+          } else if (sourceImage) {
+            fileBlob = await convertToFormat(
+              sourceImage,
+              'webp',
+              width,
+              height,
+            );
+          }
+          break;
       }
 
       if (fileBlob) {
         zipFolders.logos.file(filename, fileBlob);
+      } else {
+        if (sourceImage && format === asset.extension) {
+          const response = await fetch(sourceImage.src);
+          fileBlob = await response.blob();
+          zipFolders.logos.file(filename, fileBlob);
+        }
       }
     } catch (error) {
       console.error(

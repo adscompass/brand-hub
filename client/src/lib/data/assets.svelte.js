@@ -176,19 +176,14 @@ export const assets = $state({
   ],
   patterns: [
     {
-      id: 'diamond',
-      name: 'Ромбовидная сетка',
+      id: 'mesh',
+      name: 'Сетка из ромбов',
       url: '/patterns/diamond.svg',
     },
     {
       id: 'square',
-      name: 'Квадратная сетка',
+      name: 'Сетка из квадратов',
       url: '/patterns/square.svg',
-    },
-    {
-      id: 'mesh',
-      name: 'Сетка',
-      url: '/patterns/mesh.svg',
     },
   ],
   contacts: [

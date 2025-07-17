@@ -48,30 +48,60 @@ export function extractInnerSvg(svgText) {
   return match ? match[1].trim() : '';
 }
 
-export async function svgToPng(svgString, width, height) {
-  const canvas = document.createElement('canvas');
-  const ctx = canvas.getContext('2d');
-  const dpr = window.devicePixelRatio || 1;
+function convertToFormat(source, format, width, height) {
+  return new Promise((resolve, reject) => {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const dpr = window.devicePixelRatio || 1;
 
-  canvas.width = width * dpr;
-  canvas.height = height * dpr;
-  ctx.scale(dpr, dpr);
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    ctx.scale(dpr, dpr);
 
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => {
+    const image = new Image();
+    image.onload = () => {
       ctx.clearRect(0, 0, width, height);
-      ctx.drawImage(img, 0, 0, width, height);
-      canvas.toBlob((blob) => {
-        resolve(blob);
-      }, 'image/png');
+
+      if (format === 'jpeg') {
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect(0, 0, width, height);
+      }
+
+      ctx.drawImage(image, 0, 0, width, height);
+      canvas.toBlob(
+        (blob) => {
+          resolve(blob);
+        },
+        `image/${format}`,
+        format === 'jpeg' ? 0.9 : 1.0,
+      );
     };
-    img.onerror = (e) => {
-      console.error('Failed to convert SVG to PNG:', e);
-      resolve(null);
+    image.onerror = (e) => {
+      console.error('Не удалось загрузить изображение в конвертер:', e);
+      reject(new Error('Image conversion failed'));
     };
-    img.src =
-      'data:image/svg+xml;base64,' +
-      btoa(unescape(encodeURIComponent(svgString)));
+
+    if (typeof source === 'string') {
+      image.src =
+        'data:image/svg+xml;base64,' +
+        btoa(unescape(encodeURIComponent(source)));
+    } else if (source instanceof HTMLImageElement) {
+      image.crossOrigin = 'anonymous';
+      image.src = source.src;
+    }
   });
 }
+
+export function svgToPng(svgString, width, height) {
+  return convertToFormat(svgString, 'png', width, height);
+}
+
+export function svgToJpg(svgString, width, height) {
+  return convertToFormat(svgString, 'jpeg', width, height);
+}
+
+export function svgToWebp(svgString, width, height) {
+  return convertToFormat(svgString, 'webp', width, height);
+}
+
+export { convertToFormat };
