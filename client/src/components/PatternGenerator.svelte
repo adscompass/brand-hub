@@ -94,6 +94,17 @@
     <div>
       <h4 class="mb-2 font-semibold">Цвет фона</h4>
       <div class="flex flex-wrap items-center gap-2">
+        <button
+          onclick={() => (backgroundColor = 'transparent')}
+          class="relative h-8 w-8 overflow-hidden rounded-full border-2 transition-transform hover:scale-110 active:scale-95"
+          class:border-white={backgroundColor === 'transparent'}
+          class:border-transparent={backgroundColor !== 'transparent'}
+          style="background: repeating-conic-gradient(#808080 0% 25%, transparent 0% 50%) 50% / 10px 10px;"
+          aria-label="Выбрать прозрачный фон"
+          title="Прозрачный фон"
+        >
+          <div class="absolute -inset-px bg-white/20"></div>
+        </button>
         {#each brandColors.flatMap((g) => g.items) as color (color.hex)}
           <button
             onclick={() => (backgroundColor = color.hex)}

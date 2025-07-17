@@ -1,9 +1,5 @@
 import JSZip from 'jszip';
-import {
-  convertToFormat,
-  extractInnerSvg,
-  svgToPng,
-} from '../utils/assetProcessor';
+import { convertToFormat, extractInnerSvg } from '../utils/assetProcessor';
 import convert from 'color-convert';
 
 function determineAssetsToDownload({
@@ -154,7 +150,7 @@ async function processLogo(assetItem, { allAssets, customAssets, zipFolders }) {
 }
 
 async function processPattern(assetItem, { customPatterns, zipFolders }) {
-  const { id } = assetItem;
+  const { id, formats } = assetItem;
   const pattern = customPatterns.find((p) => p.id === id);
   if (!pattern) return;
 
@@ -174,50 +170,44 @@ async function processPattern(assetItem, { customPatterns, zipFolders }) {
     const baseWidth = viewBoxMatch ? parseFloat(viewBoxMatch[1]) : 50;
     const baseHeight = viewBoxMatch ? parseFloat(viewBoxMatch[2]) : 50;
 
-    const tileWithBgSvg = `
-            <svg 
-                width="${baseWidth}" 
-                height="${baseHeight}" 
-                viewBox="0 0 ${baseWidth} ${baseHeight}" 
-                xmlns="http://www.w3.org/2000/svg"
-            >
-                <rect width="100%" height="100%" fill="${pattern.backgroundColor}" />
-                ${coloredInnerSvg}
-            </svg>`;
-    zipFolders.patterns.file(
-      `${pattern.id}_tile_with_bg.svg`,
-      tileWithBgSvg.trim(),
-    );
+    const backgroundRect =
+      pattern.backgroundColor !== 'transparent'
+        ? `<rect width="100%" height="100%" fill="${pattern.backgroundColor}" />`
+        : '';
 
-    const pngTileBlob = await svgToPng(tileWithBgSvg, 1024, 1024);
-    if (pngTileBlob) {
-      zipFolders.patterns.file(`${pattern.id}_tile.png`, pngTileBlob);
-    }
+    const tileSvg = `
+      <svg 
+          width="${baseWidth}" 
+          height="${baseHeight}" 
+          viewBox="0 0 ${baseWidth} ${baseHeight}" 
+          xmlns="http://www.w3.org/2000/svg"
+      >
+          ${backgroundRect}
+          ${coloredInnerSvg}
+      </svg>`;
 
-    const tileTransparentSvg = `
-            <svg 
-                width="${baseWidth}" 
-                height="${baseHeight}" 
-                viewBox="0 0 ${baseWidth} ${baseHeight}" 
-                xmlns="http://www.w3.org/2000/svg"
-            >
-                ${coloredInnerSvg}
-            </svg>`;
-    zipFolders.patterns.file(
-      `${pattern.id}_tile_transparent.svg`,
-      tileTransparentSvg.trim(),
-    );
+    for (const format of formats) {
+      let fileBlob = null;
+      let filename = `${pattern.id}.${format}`;
 
-    const pngTileTransparentBlob = await svgToPng(
-      tileTransparentSvg,
-      1024,
-      1024,
-    );
-    if (pngTileTransparentBlob) {
-      zipFolders.patterns.file(
-        `${pattern.id}_tile_transparent.png`,
-        pngTileTransparentBlob,
-      );
+      switch (format) {
+        case 'svg':
+          fileBlob = new Blob([tileSvg.trim()], { type: 'image/svg+xml' });
+          break;
+        case 'png':
+          fileBlob = await convertToFormat(tileSvg, 'png', 1024, 1024);
+          break;
+        case 'jpg':
+          fileBlob = await convertToFormat(tileSvg, 'jpeg', 1024, 1024);
+          break;
+        case 'webp':
+          fileBlob = await convertToFormat(tileSvg, 'webp', 1024, 1024);
+          break;
+      }
+
+      if (fileBlob && filename) {
+        zipFolders.patterns.file(filename, fileBlob);
+      }
     }
   } catch (error) {
     console.error(`Ошибка при обработке паттерна ${pattern.id}:`, error);
